@@ -20,7 +20,7 @@
   <link rel="apple-touch-icon" sizes="167x167" href="https://imglink.cc/cdn/hLANhrGMSL.jpeg" />
   <link rel="icon" type="image/jpeg" href="https://imglink.cc/cdn/hLANhrGMSL.jpeg" />
 
-  <!-- Native Android Web App Manifest (Data-URI Pre-parsed for Chrome, Samsung & Xiaomi) -->
+  <!-- Native Android Web App Manifest -->
   <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Kindy%20Klub%22%2C%22short_name%22%3A%22Kindy%20Klub%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22any%22%2C%22background_color%22%3A%22%23FFF7FC%22%2C%22theme_color%22%3A%22%23FFF7FC%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimglink.cc%2Fcdn%2FhLANhrGMSL.jpeg%22%2C%22sizes%22%3A%22192x192%20512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
 
   <!-- Google Fonts: DynaPuff & Jua -->
@@ -87,7 +87,7 @@
       font-family: 'Jua', sans-serif;
       margin: 0;
       padding: 0;
-      background: #FDFEFE;
+      background: #FFF7FC;
       color: #1E293B;
       overflow-x: hidden;
       -webkit-tap-highlight-color: transparent;
@@ -96,12 +96,15 @@
       font-family: 'DynaPuff', cursive;
     }
 
-    /* Support iOS & Android Safe Area (Notch / Dynamic Island / Cutout) */
-    .ios-safe-top {
-      padding-top: max(12px, env(safe-area-inset-top, 12px));
+    /* Strict Clear Spacing for iPhone Dynamic Island, Notches & Android Cutouts */
+    .app-header-safe {
+      padding-top: max(56px, env(safe-area-inset-top, 56px));
+    }
+    .frontpage-safe-top {
+      padding-top: max(58px, env(safe-area-inset-top, 58px));
     }
     .ios-safe-bottom {
-      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
+      padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
     }
 
     @keyframes gentleFloat {
@@ -769,23 +772,23 @@ Please visit the portal to start playing. Happy learning!`
           <path d="M 240 600 A 260 210 0 0 1 760 600" stroke="#a890ff" strokeWidth="18" strokeLinecap="round" opacity="0.8" />
         </svg>
 
-        <div className="absolute top-8 left-6 w-44 h-24 bg-white/90 rounded-full blur-[0.5px] shadow-sm animate-float" style={{ animationDelay: '0s' }}>
+        <div className="absolute top-12 left-6 w-44 h-24 bg-white/90 rounded-full blur-[0.5px] shadow-sm animate-float" style={{ animationDelay: '0s' }}>
           <div className="absolute -top-7 left-8 w-20 h-20 bg-white rounded-full"></div>
           <div className="absolute -top-4 left-20 w-16 h-16 bg-white rounded-full"></div>
         </div>
 
-        <div className="absolute top-16 right-8 w-52 h-24 bg-white/90 rounded-full blur-[0.5px] shadow-sm animate-float" style={{ animationDelay: '2.5s' }}>
+        <div className="absolute top-20 right-8 w-52 h-24 bg-white/90 rounded-full blur-[0.5px] shadow-sm animate-float" style={{ animationDelay: '2.5s' }}>
           <div className="absolute -top-8 left-12 w-24 h-24 bg-white rounded-full"></div>
           <div className="absolute -top-5 left-28 w-18 h-18 bg-white rounded-full"></div>
         </div>
 
-        <div className="absolute top-36 left-1/4 animate-bounce" style={{ animationDuration: '3s' }}>
+        <div className="absolute top-44 left-1/4 animate-bounce" style={{ animationDuration: '3s' }}>
           <Icon name="sparkles" className="w-7 h-7 text-[#f5e45f]" />
         </div>
-        <div className="absolute top-28 right-1/4 animate-bounce" style={{ animationDuration: '4s' }}>
+        <div className="absolute top-36 right-1/4 animate-bounce" style={{ animationDuration: '4s' }}>
           <Icon name="star" className="w-7 h-7 text-[#ff68bd]" />
         </div>
-        <div className="absolute top-48 right-12 animate-pulse">
+        <div className="absolute top-52 right-12 animate-pulse">
           <Icon name="heart" className="w-6 h-6 text-[#FD60C7]" />
         </div>
 
@@ -1821,22 +1824,22 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* TOP NAVIGATION — Responsive iOS & Android Notch / Cutout Aware */}
+          {/* TOP NAVIGATION — Full Solid Background + Strict Dynamic Island Clearance */}
           {currentView !== 'welcome' && currentView !== 'player' && (
-            <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-4 border-[#AEE9F3] shadow-sm ios-safe-top">
-              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-2.5 sm:pb-3.5 flex items-center justify-between gap-2">
+            <header className="sticky top-0 z-40 bg-white border-b-4 border-[#AEE9F3] shadow-md app-header-safe">
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-3 pt-1 flex items-center justify-between gap-2">
                 <div
                   onClick={() => routeUser(currentUser)}
                   className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group flex-shrink-0"
                 >
-                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl overflow-hidden border-2 border-[#FD60C7] shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl overflow-hidden border-2 border-[#FD60C7] shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
                     <img src="https://imglink.cc/cdn/hLANhrGMSL.jpeg" alt="Kindy Klub Icon" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col justify-center min-w-0">
                     <span className="font-heading text-sm sm:text-lg lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-[#FD60C7] via-[#07bdff] to-[#00c69e] bg-clip-text text-transparent whitespace-nowrap leading-none">
                       Kindy Klub
                     </span>
-                    <span className="text-[7.5px] sm:text-[9.5px] tracking-wider uppercase font-extrabold text-[#a890ff] whitespace-nowrap leading-none mt-1 mb-0.5 block">
+                    <span className="text-[8px] sm:text-[9.5px] tracking-wider uppercase font-extrabold text-[#a890ff] whitespace-nowrap leading-none mt-1 mb-0.5 block">
                       Magical Game Arcade
                     </span>
                   </div>
@@ -1928,17 +1931,18 @@ Please visit the portal to start playing. Happy learning!`
           {/* MAIN CONTENT ROUTER */}
           <main className="flex-1 flex flex-col relative z-10">
 
-            {/* PAGE 1: WELCOME & LOGIN GATEWAY */}
+            {/* PAGE 1: WELCOME & LOGIN GATEWAY — Dynamic Island Safe */}
             {currentView === 'welcome' && (
-              <div className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-4 py-12 ios-safe-top">
+              <div className="relative min-h-screen flex flex-col items-center justify-start px-4 pb-12 frontpage-safe-top">
                 <MagicalArcadeBackground />
 
-                <div className="absolute top-5 right-5 sm:top-8 sm:right-10 z-30 animate-float" style={{ animationDuration: '6s' }}>
+                {/* Top Language Toggle Bar (Safely below Dynamic Island & Clock) */}
+                <div className="relative z-30 w-full max-w-md flex justify-end mb-3 pr-2">
                   <div className="flex items-center p-1 rounded-full bg-white/95 backdrop-blur-md border-3 border-[#AEE9F3] shadow-md">
                     <button
                       type="button"
                       onClick={() => setLang('ms')}
-                      className={`px-4 py-1.5 rounded-full font-heading text-xs font-bold transition-all ${
+                      className={`px-3.5 py-1.5 rounded-full font-heading text-xs font-bold transition-all ${
                         lang === 'ms'
                           ? 'bg-gradient-to-r from-[#FD60C7] to-[#ff68bd] text-white shadow-3d-pink scale-105'
                           : 'text-slate-600 hover:text-slate-900'
@@ -1949,7 +1953,7 @@ Please visit the portal to start playing. Happy learning!`
                     <button
                       type="button"
                       onClick={() => setLang('en')}
-                      className={`px-4 py-1.5 rounded-full font-heading text-xs font-bold transition-all ${
+                      className={`px-3.5 py-1.5 rounded-full font-heading text-xs font-bold transition-all ${
                         lang === 'en'
                           ? 'bg-gradient-to-r from-[#07bdff] to-[#00c69e] text-white shadow-3d-sky scale-105'
                           : 'text-slate-600 hover:text-slate-900'
@@ -1960,15 +1964,15 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
                 </div>
 
-                <div className="relative z-10 w-full max-w-md mx-auto text-center">
-                  <div className="w-24 h-24 mx-auto mb-4 rounded-3xl overflow-hidden shadow-2xl border-4 border-white animate-glow">
+                <div className="relative z-10 w-full max-w-md mx-auto text-center mt-1">
+                  <div className="w-24 h-24 mx-auto mb-3 rounded-3xl overflow-hidden shadow-2xl border-4 border-white animate-glow">
                     <img src="https://imglink.cc/cdn/hLANhrGMSL.jpeg" alt="Kindy Klub Logo" className="w-full h-full object-cover" />
                   </div>
 
-                  <h1 className="font-heading text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 drop-shadow-sm mb-2">
+                  <h1 className="font-heading text-4xl sm:text-5xl font-bold tracking-tight text-slate-900 drop-shadow-sm mb-1.5">
                     {t.welcomePrefix} <span className="bg-gradient-to-r from-[#FD60C7] via-[#07bdff] to-[#a6e23d] bg-clip-text text-transparent">Kindy Klub!</span>
                   </h1>
-                  <p className="font-extrabold text-slate-700 text-sm sm:text-base mb-8">
+                  <p className="font-extrabold text-slate-700 text-sm sm:text-base mb-6">
                     {t.welcomeSubtitle}
                   </p>
 
@@ -2079,7 +2083,7 @@ Please visit the portal to start playing. Happy learning!`
                 <CustomCatalogueBackground />
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white/80 backdrop-blur-md p-6 sm:p-7 rounded-[36px] border-4 border-[#AEE9F3] shadow-md">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 bg-white p-6 sm:p-7 rounded-[36px] border-4 border-[#AEE9F3] shadow-md">
                     <div>
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FD60C7]/15 text-[#FD60C7] text-xs font-heading font-bold mb-1">
                         <Icon name="sparkles" className="w-3.5 h-3.5 text-[#FD60C7]" />
@@ -2124,7 +2128,7 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
 
                   {categories.length === 0 ? (
-                    <div className="bg-white/90 backdrop-blur-md rounded-[36px] p-12 text-center border-4 border-[#D7BDED] shadow-xl max-w-lg mx-auto">
+                    <div className="bg-white rounded-[36px] p-12 text-center border-4 border-[#D7BDED] shadow-xl max-w-lg mx-auto">
                       <div className="w-20 h-20 bg-[#f5e45f]/30 border-3 border-[#f5e45f] rounded-3xl flex items-center justify-center mx-auto mb-4">
                         <Icon name="castle" className="w-10 h-10 text-[#c7b632]" />
                       </div>
@@ -2183,7 +2187,7 @@ Please visit the portal to start playing. Happy learning!`
                 <CustomCatalogueBackground />
 
                 <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-                  <div className="flex items-center gap-4 mb-8 bg-white/85 backdrop-blur-md p-5 sm:p-6 rounded-[34px] border-4 border-[#07bdff] shadow-md">
+                  <div className="flex items-center gap-4 mb-8 bg-white p-5 sm:p-6 rounded-[34px] border-4 border-[#07bdff] shadow-md">
                     <button
                       onClick={() => {
                         setSelectedCategoryId(null);
@@ -2205,7 +2209,7 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
 
                   {games.filter(g => g.category_id === activeCategoryObj.id && g.is_published).length === 0 ? (
-                    <div className="bg-white/90 backdrop-blur-md rounded-[36px] p-12 text-center border-4 border-[#ff68bd] shadow-xl max-w-lg mx-auto">
+                    <div className="bg-white rounded-[36px] p-12 text-center border-4 border-[#ff68bd] shadow-xl max-w-lg mx-auto">
                       <div className="w-16 h-16 bg-[#ff68bd]/20 rounded-3xl flex items-center justify-center mx-auto mb-4">
                         <Icon name="sparkles" className="w-8 h-8 text-[#ff68bd]" />
                       </div>
@@ -3506,7 +3510,7 @@ Please visit the portal to start playing. Happy learning!`
 
           {/* OFFICIAL FOOTER — Safe Area Aware */}
           {currentView !== 'player' && (
-            <footer className="bg-white/90 backdrop-blur-md border-t-4 border-[#AEE9F3] py-6 ios-safe-bottom text-center mt-auto relative z-20">
+            <footer className="bg-white border-t-4 border-[#AEE9F3] py-6 ios-safe-bottom text-center mt-auto relative z-20">
               <p className="text-xs font-extrabold text-slate-400 tracking-wider">
                 Kinder Klub | All Rights Reserved
               </p>
