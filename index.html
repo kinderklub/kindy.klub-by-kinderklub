@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Kindy Klub — Magical 3D Kingdom & Children's Game Arcade</title>
 
-  <!-- PWA & iOS Home Screen App Capabilities -->
+  <!-- PWA & Android / iOS Home Screen Standalone Setup -->
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Kindy Klub" />
   <meta name="application-name" content="Kindy Klub" />
-  <meta name="theme-color" content="#FD60C7" />
+  <meta name="theme-color" content="#FFF7FC" />
 
   <!-- iOS Homescreen App Icon -->
   <link rel="apple-touch-icon" href="https://imglink.cc/cdn/hLANhrGMSL.jpeg" />
@@ -19,30 +20,8 @@
   <link rel="apple-touch-icon" sizes="167x167" href="https://imglink.cc/cdn/hLANhrGMSL.jpeg" />
   <link rel="icon" type="image/jpeg" href="https://imglink.cc/cdn/hLANhrGMSL.jpeg" />
 
-  <!-- Web App Manifest Dynamic Injection -->
-  <script>
-    const appIconUrl = "https://imglink.cc/cdn/hLANhrGMSL.jpeg";
-    const manifestBlob = new Blob([JSON.stringify({
-      name: "Kindy Klub",
-      short_name: "Kindy Klub",
-      start_url: "./",
-      display: "standalone",
-      background_color: "#FFF7FC",
-      theme_color: "#FD60C7",
-      icons: [
-        {
-          src: appIconUrl,
-          sizes: "192x192 512x512",
-          type: "image/jpeg",
-          purpose: "any maskable"
-        }
-      ]
-    })], { type: "application/json" });
-    const manifestLink = document.createElement("link");
-    manifestLink.rel = "manifest";
-    manifestLink.href = URL.createObjectURL(manifestBlob);
-    document.head.appendChild(manifestLink);
-  </script>
+  <!-- Native Android Web App Manifest (Data-URI Pre-parsed for Chrome, Samsung & Xiaomi) -->
+  <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Kindy%20Klub%22%2C%22short_name%22%3A%22Kindy%20Klub%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22any%22%2C%22background_color%22%3A%22%23FFF7FC%22%2C%22theme_color%22%3A%22%23FFF7FC%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimglink.cc%2Fcdn%2FhLANhrGMSL.jpeg%22%2C%22sizes%22%3A%22192x192%20512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
 
   <!-- Google Fonts: DynaPuff & Jua -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -100,6 +79,10 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
     body {
       font-family: 'Jua', sans-serif;
       margin: 0;
@@ -111,6 +94,14 @@
     }
     h1, h2, h3, h4, h5, h6, .font-heading {
       font-family: 'DynaPuff', cursive;
+    }
+
+    /* Support iOS & Android Safe Area (Notch / Dynamic Island / Cutout) */
+    .ios-safe-top {
+      padding-top: max(12px, env(safe-area-inset-top, 12px));
+    }
+    .ios-safe-bottom {
+      padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
     }
 
     @keyframes gentleFloat {
@@ -162,9 +153,7 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
 
-    // =========================================================================
     // CONFIGURATION & CONSTANTS
-    // =========================================================================
     const CONFIG_ADMIN_LOGIN_ID = "admin";
     const CONFIG_DEFAULT_ADMIN_PASS = "110708";
 
@@ -280,7 +269,7 @@
           "Tiada lesen penjualan semula (PLR) atau pengubahan kandungan (MLR) diberikan.",
           "Dilarang menjual semula atau mengubah mana-mana kandungan dalam Kindy Klub.",
           "Dilarang sebarang bentuk penjualan secara peribadi atau menyebarkan kandungan secara percuma.",
-          "Dilarang bentuk penjualan combo bersama produk lain kecuali jika pihak HQ membuat combo produk lain dibawah jenama Kinder Klub.",
+          "Dilarang sebarang bentuk penjualan combo bersama produk lain kecuali jika pihak HQ membuat combo produk lain dibawah jenama Kinder Klub.",
           "Ketidakpatuhan akan menyebabkan tindakan undang-undang layak diambil ke atas anda."
         ],
         viewArcade: "Lihat Arked Game",
@@ -533,7 +522,7 @@ Please visit the portal to start playing. Happy learning!`
           return (
             <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" {...props}>
               <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-              <line x1="1" y1="1" x2="23" y2="23" />
+              <line x1="1" y1="2" x2="23" y2="23" />
             </svg>
           );
         case "crown":
@@ -916,9 +905,7 @@ Please visit the portal to start playing. Happy learning!`
       { id: 'sparkles', label_ms: 'Kilau', label_en: 'Sparkle', icon: 'sparkles', bg: 'bg-[#E1F011]', text: 'text-slate-900', border: 'border-[#E1F011]' },
     ];
 
-    // =========================================================================
     // MAIN REACT APP
-    // =========================================================================
     function KindyKlubApp() {
       const [lang, setLang] = useState(() => localStorage.getItem("kindy_lang_choice") || "ms");
       const t = TRANSLATIONS[lang] || TRANSLATIONS.ms;
@@ -1834,10 +1821,10 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* TOP NAVIGATION */}
+          {/* TOP NAVIGATION — Responsive iOS & Android Notch / Cutout Aware */}
           {currentView !== 'welcome' && currentView !== 'player' && (
-            <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-4 border-[#AEE9F3] shadow-sm">
-              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3.5 flex items-center justify-between gap-2">
+            <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b-4 border-[#AEE9F3] shadow-sm ios-safe-top">
+              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-2.5 sm:pb-3.5 flex items-center justify-between gap-2">
                 <div
                   onClick={() => routeUser(currentUser)}
                   className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group flex-shrink-0"
@@ -1943,7 +1930,7 @@ Please visit the portal to start playing. Happy learning!`
 
             {/* PAGE 1: WELCOME & LOGIN GATEWAY */}
             {currentView === 'welcome' && (
-              <div className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-4 py-12">
+              <div className="relative min-h-[calc(100vh-80px)] flex flex-col items-center justify-center px-4 py-12 ios-safe-top">
                 <MagicalArcadeBackground />
 
                 <div className="absolute top-5 right-5 sm:top-8 sm:right-10 z-30 animate-float" style={{ animationDuration: '6s' }}>
@@ -3517,9 +3504,9 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* OFFICIAL FOOTER */}
+          {/* OFFICIAL FOOTER — Safe Area Aware */}
           {currentView !== 'player' && (
-            <footer className="bg-white/90 backdrop-blur-md border-t-4 border-[#AEE9F3] py-6 text-center mt-auto relative z-20">
+            <footer className="bg-white/90 backdrop-blur-md border-t-4 border-[#AEE9F3] py-6 ios-safe-bottom text-center mt-auto relative z-20">
               <p className="text-xs font-extrabold text-slate-400 tracking-wider">
                 Kinder Klub | All Rights Reserved
               </p>
