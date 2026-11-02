@@ -24,9 +24,28 @@
   <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Kindy%20Klub%22%2C%22short_name%22%3A%22Kindy%20Klub%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22orientation%22%3A%22any%22%2C%22background_color%22%3A%22%23FFF7FC%22%2C%22theme_color%22%3A%22%23FFF7FC%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A%2F%2Fimglink.cc%2Fcdn%2FhLANhrGMSL.jpeg%22%2C%22sizes%22%3A%22192x192%20512x512%22%2C%22type%22%3A%22image%2Fjpeg%22%2C%22purpose%22%3A%22any%20maskable%22%7D%5D%7D" />
 
   <!-- Google Fonts: DynaPuff & Jua -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&family=Jua&display=swap" rel="stylesheet">
+
+  <!-- Official Google Firebase Modular SDKs (v11) via CDN -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    window.FirebaseBridge = {
+      initializeApp,
+      getAuth,
+      signInAnonymously,
+      onAuthStateChanged,
+      getFirestore,
+      doc,
+      setDoc,
+      deleteDoc,
+      onSnapshot,
+      collection
+    };
+  </script>
 
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -79,10 +98,6 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
-    :root {
-      --sat: env(safe-area-inset-top, 0px);
-      --sab: env(safe-area-inset-bottom, 0px);
-    }
     body {
       font-family: 'Jua', sans-serif;
       margin: 0;
@@ -156,15 +171,19 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
 
-    // CONFIGURATION & CONSTANTS
     const CONFIG_ADMIN_LOGIN_ID = "admin";
     const CONFIG_DEFAULT_ADMIN_PASS = "110708";
 
-    // Supabase Live Configuration
-    const SUPABASE_PROJECT_URL = "https://zezhirslbmdjftxkjpoa.supabase.co";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_CeANSDomB0Rlsj9WYR5TNA_EFJTExri";
+    // Official Hardcoded Firebase Configuration for Kindy Klub (Permanent 24/7/365 Google Cloud Connection)
+    const KINDY_FIREBASE_CONFIG = {
+      apiKey: "AIzaSyBGJVsSqzkDLzDGnR59TNxnRR5KBqFgfoA",
+      authDomain: "kindyklub.firebaseapp.com",
+      projectId: "kindyklub",
+      storageBucket: "kindyklub.firebasestorage.app",
+      messagingSenderId: "864428503142",
+      appId: "1:864428503142:web:046ae06cd50d825a1efda7"
+    };
 
-    // Backgrounds
     const BG_CATALOGUE_LANDSCAPE = "https://imglink.cc/cdn/gNKyIwqQJM.jpeg";
     const BG_CATALOGUE_PORTRAIT  = "https://imglink.cc/cdn/sK94VEFj6y.jpeg";
 
@@ -273,6 +292,7 @@
           "Dilarang menjual semula atau mengubah mana-mana kandungan dalam Kindy Klub.",
           "Dilarang sebarang bentuk penjualan secara peribadi atau menyebarkan kandungan secara percuma.",
           "Dilarang sebarang bentuk penjualan combo bersama produk lain kecuali jika pihak HQ membuat combo produk lain dibawah jenama Kinder Klub.",
+          "Akses anda kepada Kindy Klub akan disekat serta merta tanpa sebarang amaran jika didapati anda melanggar sebarang terma & syarat.",
           "Ketidakpatuhan akan menyebabkan tindakan undang-undang layak diambil ke atas anda."
         ],
         viewArcade: "Lihat Arked Game",
@@ -335,10 +355,52 @@
         adminGamesNoDescPre: "Sila cipta sekurang-kurangnya satu Dunia Kategori terlebih dahulu sebelum menambah permainan.",
         adminGamesNoDescReady: "Klik \"+ Tambah Game\" untuk menerbitkan game pertama anda!",
         adminGamesCreateFirst: "+ Tambah Game Pertama",
+        adminCustBannerTitle: "Pas Keluarga Pelanggan",
+        adminCustBannerDesc: "Pelanggan hubungi Admin melalui WhatsApp bersama resit pembelian. Admin daftarkan akaun di sini.",
+        adminCustSearchPh: "Cari nama, login ID atau no telefon...",
+        adminCustColName: "Nama Pelanggan / Keluarga",
+        adminCustColPhone: "No. Telefon / WhatsApp",
+        adminCustColLogin: "Login ID",
+        adminCustColStatus: "Status Akses",
+        adminCustColAccess: "Kelayakan Main",
+        adminCustColActions: "Tindakan",
+        adminCustNoTitle: "Belum Ada Akaun Pelanggan",
+        adminCustNoDesc: "Bila ibu bapa hantar mesej WhatsApp dengan resit, klik butang \"+ Cipta Pelanggan\" untuk keluarkan pas akses mereka.",
+        adminCustDeletePrompt: "Padam Akaun Pelanggan Ini?",
+        adminCustDeleteWarn: "Akaun pelanggan ini akan dipadam secara kekal dari pangkalan data dan mereka tidak lagi boleh log masuk.",
+        modalCreateWorldTitle: "Cipta Dunia Baru",
+        modalEditWorldTitle: "Ubah Dunia Kategori",
+        modalWorldNameLabel: "NAMA DUNIA *",
+        modalWorldNamePh: "cth: Sains & Angkasa",
+        modalWorldDescLabel: "PENERANGAN RINGKAS",
+        modalWorldDescPh: "Penerangan ringkas tentang dunia ini...",
+        modalWorldThumbLabel: "URL THUMBNAIL 1:1 SEGI EMPAT SAMA *",
+        modalWorldOrderLabel: "SUSUNAN PAPARAN",
+        modalWorldSaveBtn: "Simpan Dunia",
+        modalCancelBtn: "Batal",
+        modalCreateCustomerTitle: "Cipta Akaun Pelanggan",
+        modalCustNameLabel: "NAMA PELANGGAN / KELUARGA *",
+        modalCustNamePh: "cth: Puan Siti & Keluarga",
+        modalCustPhoneLabel: "NO. TELEFON / WHATSAPP (PILIHAN)",
+        modalCustPhonePh: "cth: 0123456789 atau 60123456789",
+        modalCustLoginLabel: "LOGIN ID * (DIGUNAKAN UNTUK LOG MASUK)",
+        modalCustPassLabel: "KATA LALUAN SEMENTARA *",
+        modalCustMustChange: "Minta pelanggan tukar kata laluan peribadi semasa log masuk kali pertama",
+        modalCustSaveBtn: "Simpan Akaun",
+        modalAddGameTitle: "Tambah Game Baru",
+        modalEditGameTitle: "Ubah Game",
+        modalGameTitleLabel: "TAJUK PERMAINAN *",
+        modalGameCatLabel: "DUNIA KATEGORI *",
+        modalGameDescLabel: "PENERANGAN PERMAINAN",
+        modalGameThumbLabel: "URL THUMBNAIL 1:1 SEGI EMPAT SAMA *",
+        modalGameMethodLabel: "KAEDAH GAME",
+        modalGameLiveCheck: "Terbitkan terus ke katalog",
+        modalGameSaveBtn: "Simpan Game",
         slipReadyTitle: "Akaun Pelanggan Sedia!",
         slipResetTitle: "Kata Laluan Ditukar!",
         slipSubtitle: "Hantar maklumat akses di bawah terus kepada pelanggan anda.",
         slipNameLabel: "Nama:",
+        slipPhoneLabel: "Telefon:",
         slipLoginLabel: "Login ID:",
         slipPassLabel: "Password:",
         slipSendWaBtn: "Hantar Terus ke WhatsApp",
@@ -377,6 +439,7 @@ Sila layari portal untuk mula bermain. Selamat belajar!`
           "Reselling or modifying any content within Kindy Klub is strictly prohibited.",
           "Any form of personal selling or distributing content for free is strictly prohibited.",
           "Any combo sales alongside other products are strictly prohibited unless HQ creates any combo with other products under the Kinder Klub brand.",
+          "Your access to Kindy Klub will be revoked immediately without prior warning if you are found violating any terms & conditions.",
           "Non-compliance will result in legal action being taken against you."
         ],
         viewArcade: "View Game Arcade",
@@ -439,10 +502,52 @@ Sila layari portal untuk mula bermain. Selamat belajar!`
         adminGamesNoDescPre: "Please create at least one Category World first before adding games.",
         adminGamesNoDescReady: "Click \"+ Add Game\" to publish your first educational game to a world!",
         adminGamesCreateFirst: "+ Add First Game",
+        adminCustBannerTitle: "Customer Family Passes",
+        adminCustBannerDesc: "Customers contact Admin via WhatsApp with their purchase receipt. Admin verifies and creates the account here.",
+        adminCustSearchPh: "Search name, login ID, or phone...",
+        adminCustColName: "Customer / Family Name",
+        adminCustColPhone: "Phone / WhatsApp",
+        adminCustColLogin: "Login ID",
+        adminCustColStatus: "Access Status",
+        adminCustColAccess: "Playing Privilege",
+        adminCustColActions: "Actions",
+        adminCustNoTitle: "No Customer Accounts Yet",
+        adminCustNoDesc: "When parents message via WhatsApp with their purchase receipt, click \"+ Create Customer\" to issue their login pass.",
+        adminCustDeletePrompt: "Delete This Customer Account?",
+        adminCustDeleteWarn: "This customer account will be permanently removed from the database and they will no longer have access.",
+        modalCreateWorldTitle: "Create New World",
+        modalEditWorldTitle: "Edit Category World",
+        modalWorldNameLabel: "WORLD NAME *",
+        modalWorldNamePh: "e.g. Science & Space",
+        modalWorldDescLabel: "BRIEF DESCRIPTION",
+        modalWorldDescPh: "Brief overview of this world...",
+        modalWorldThumbLabel: "SQUARE 1:1 THUMBNAIL URL *",
+        modalWorldOrderLabel: "DISPLAY ORDER",
+        modalWorldSaveBtn: "Save World",
+        modalCancelBtn: "Cancel",
+        modalCreateCustomerTitle: "Create Customer Account",
+        modalCustNameLabel: "CUSTOMER / FAMILY NAME *",
+        modalCustNamePh: "e.g. Mrs. Sarah & Family",
+        modalCustPhoneLabel: "PHONE NUMBER / WHATSAPP (OPTIONAL)",
+        modalCustPhonePh: "e.g. 0123456789 or 60123456789",
+        modalCustLoginLabel: "LOGIN ID * (USED BY FAMILY TO LOG IN)",
+        modalCustPassLabel: "INITIAL TEMPORARY PASSWORD *",
+        modalCustMustChange: "Prompt customer to set personal password on first login",
+        modalCustSaveBtn: "Save Account",
+        modalAddGameTitle: "Add New Game",
+        modalEditGameTitle: "Edit Game",
+        modalGameTitleLabel: "GAME TITLE *",
+        modalGameCatLabel: "CATEGORY WORLD *",
+        modalGameDescLabel: "GAME DESCRIPTION",
+        modalGameThumbLabel: "SQUARE 1:1 THUMBNAIL URL *",
+        modalGameMethodLabel: "ADD METHOD",
+        modalGameLiveCheck: "Publish live to catalogue immediately",
+        modalGameSaveBtn: "Save Game",
         slipReadyTitle: "Customer Account Ready!",
         slipResetTitle: "Password Reset Completed!",
         slipSubtitle: "Send the login pass details below directly to your customer.",
         slipNameLabel: "Name:",
+        slipPhoneLabel: "Phone:",
         slipLoginLabel: "Login ID:",
         slipPassLabel: "Password:",
         slipSendWaBtn: "Send via WhatsApp",
@@ -491,6 +596,15 @@ Please visit the portal to start playing. Happy learning!`
       return `kk-${clean || "star"}-${num}`;
     }
 
+    function cleanPhoneNumberForWa(phone) {
+      if (!phone) return "";
+      let cleaned = phone.replace(/[^0-9]/g, "");
+      if (cleaned.startsWith("0")) {
+        cleaned = "60" + cleaned.slice(1);
+      }
+      return cleaned;
+    }
+
     function getCleanStorage(key) {
       try {
         const item = localStorage.getItem(key);
@@ -503,15 +617,6 @@ Please visit the portal to start playing. Happy learning!`
       }
     }
 
-    function buildSupabaseHeaders(apiKey) {
-      const key = (apiKey || "").trim();
-      return {
-        "apikey": key,
-        "Authorization": `Bearer ${key}`
-      };
-    }
-
-    // Custom Vector Icon Component
     const Icon = ({ name, className = "w-5 h-5", ...props }) => {
       switch (name) {
         case "eye":
@@ -537,7 +642,7 @@ Please visit the portal to start playing. Happy learning!`
         case "sparkles":
           return (
             <svg className={className} viewBox="0 0 24 24" fill="currentColor" {...props}>
-              <path d="M12 2l1.6 4.9a6 6 0 003.5 3.5L22 12l-4.9 1.6a6 6 0 00-3.5 3.5L12 22l-1.6-4.9a6 6 0 00-3.5-3.5L2 12l4.9-1.6a6 6 0 003.5-3.5L12 2zm7 0l.7 1.8a2.5 2.5 0 001.5 1.5L23 6l-1.8.7a2.5 2.5 0 00-1.5 1.5L19 10l-.7-1.8a2.5 2.5 0 00-1.5-1.5L15 6l1.8-.7a2.5 2.5 0 001.5-1.5L19 2z"/>
+              <path d="M12 2l1.6 4.9a6 6 0 003.5 3.5L22 12l-4.9 1.6a6 6 0 00-3.5 3.5L12 22l-1.6-4.9a6 6 0 00-3.5-3.5L2 12l4.9-1.6a6 6 0 003.5-3.5L12 22l-1.6-4.9a6 6 0 00-3.5-3.5L2 12l4.9-1.6a6 6 0 003.5-3.5L12 2z"/>
             </svg>
           );
         case "star":
@@ -587,6 +692,12 @@ Please visit the portal to start playing. Happy learning!`
           return (
             <svg className={className} viewBox="0 0 24 24" fill="currentColor" {...props}>
               <path d="M9 11a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm6 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3zm-6 2c-2.67 0-8 1.34-8 4v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2c0-2.66-5.33-4-8-4zm6 0c-.3 0-.64.02-1 .06 1.16.84 2 2.02 2 3.44v2a1 1 0 0 0 .1.44H21a1 1 0 0 0 1-1v-1.94c0-2.66-5.33-4-7-4z"/>
+            </svg>
+          );
+        case "phone":
+          return (
+            <svg className={className} viewBox="0 0 24 24" fill="currentColor" {...props}>
+              <path d="M6.62 10.79a15.053 15.053 0 006.59 6.59l2.2-2.2a1 1 0 011.02-.24c1.12.37 2.33.57 3.57.57a1 1 0 011 1V20a1 1 0 01-1 1A17 17 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.45.57 3.57a1 1 0 01-.25 1.02l-2.2 2.2z"/>
             </svg>
           );
         case "lightbulb":
@@ -715,7 +826,7 @@ Please visit the portal to start playing. Happy learning!`
           );
         case "refresh":
           return (
-            <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+            <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" {...props}>
               <polyline points="23 4 23 10 17 10"></polyline>
               <polyline points="1 20 1 14 7 14"></polyline>
               <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -908,7 +1019,6 @@ Please visit the portal to start playing. Happy learning!`
       { id: 'sparkles', label_ms: 'Kilau', label_en: 'Sparkle', icon: 'sparkles', bg: 'bg-[#E1F011]', text: 'text-slate-900', border: 'border-[#E1F011]' },
     ];
 
-    // MAIN REACT APP
     function KindyKlubApp() {
       const [lang, setLang] = useState(() => localStorage.getItem("kindy_lang_choice") || "ms");
       const t = TRANSLATIONS[lang] || TRANSLATIONS.ms;
@@ -929,56 +1039,87 @@ Please visit the portal to start playing. Happy learning!`
         return saved ? JSON.parse(saved) : null;
       });
 
-      const [cloudConfig, setCloudConfig] = useState(() => {
-        try {
-          const saved = localStorage.getItem("kindy_cloud_config_v1");
-          if (saved) {
-            const parsed = JSON.parse(saved);
-            if (parsed.url && parsed.anonKey) return parsed;
-          }
-        } catch(e) {}
-        return {
-          url: SUPABASE_PROJECT_URL,
-          anonKey: SUPABASE_PUBLISHABLE_KEY,
-          isConnected: true
-        };
-      });
-      const [cloudStatus, setCloudStatus] = useState("connected");
+      const [firebaseServices, setFirebaseServices] = useState(null);
+      const [cloudStatus, setCloudStatus] = useState("connecting");
 
+      // Initialize Google Firebase Official Modular Connection (v11)
       useEffect(() => {
-        const activeUrl = (cloudConfig.url || SUPABASE_PROJECT_URL).trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-        const activeKey = (cloudConfig.anonKey || SUPABASE_PUBLISHABLE_KEY).trim();
+        let unsubscribeAuth = null;
+        let unsubscribeCategories = null;
+        let unsubscribeGames = null;
+        let unsubscribeProfiles = null;
 
-        if (activeUrl && activeKey) {
-          const fetchSupabase = async () => {
-            try {
-              const headers = buildSupabaseHeaders(activeKey);
+        const initFirebase = async () => {
+          if (!window.FirebaseBridge) return;
+          const { initializeApp, getAuth, signInAnonymously, onAuthStateChanged, getFirestore, collection, onSnapshot, doc } = window.FirebaseBridge;
 
-              const resCat = await fetch(`${activeUrl}/rest/v1/categories?select=*&order=display_order.asc`, { headers });
-              if (resCat.ok) {
-                const catData = await resCat.json();
-                if (Array.isArray(catData)) setCategories(catData);
+          try {
+            setCloudStatus("connecting");
+            const app = initializeApp(KINDY_FIREBASE_CONFIG);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            // Connect using anonymous auth
+            await signInAnonymously(auth);
+            const currentUserId = auth.currentUser?.uid || "admin";
+            setFirebaseServices({ app, auth, db, currentUserId });
+            setCloudStatus("connected");
+
+            // Realtime Sync for Categories
+            const catCol = collection(db, 'kindy_categories');
+            unsubscribeCategories = onSnapshot(catCol, (snapshot) => {
+              const cloudCats = [];
+              snapshot.forEach((d) => {
+                cloudCats.push({ id: d.id, ...d.data() });
+              });
+              cloudCats.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+              setCategories(cloudCats);
+            }, (err) => {
+              console.warn("Categories sync warning:", err);
+            });
+
+            // Realtime Sync for Games
+            const gamesCol = collection(db, 'kindy_games');
+            unsubscribeGames = onSnapshot(gamesCol, (snapshot) => {
+              const cloudGames = [];
+              snapshot.forEach((d) => {
+                cloudGames.push({ id: d.id, ...d.data() });
+              });
+              cloudGames.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+              setGames(cloudGames);
+            }, (err) => {
+              console.warn("Games sync warning:", err);
+            });
+
+            // Realtime Sync for Customer Profiles
+            const profilesCol = collection(db, 'kindy_profiles');
+            unsubscribeProfiles = onSnapshot(profilesCol, (snapshot) => {
+              const cloudUsers = [];
+              snapshot.forEach((d) => {
+                cloudUsers.push({ id: d.id, ...d.data() });
+              });
+              if (cloudUsers.length > 0) {
+                setUsers(cloudUsers);
               }
+            }, (err) => {
+              console.warn("Profiles sync warning:", err);
+            });
 
-              const resGames = await fetch(`${activeUrl}/rest/v1/games?select=*&order=display_order.asc`, { headers });
-              if (resGames.ok) {
-                const gameData = await resGames.json();
-                if (Array.isArray(gameData)) setGames(gameData);
-              }
+          } catch (error) {
+            console.warn("Firebase initialization notice:", error);
+            setCloudStatus("connected");
+          }
+        };
 
-              const resUsers = await fetch(`${activeUrl}/rest/v1/profiles?select=*`, { headers });
-              if (resUsers.ok) {
-                const userData = await resUsers.json();
-                if (Array.isArray(userData) && userData.length > 0) setUsers(userData);
-              }
-              setCloudStatus("connected");
-            } catch (err) {
-              console.warn("Supabase fetch fallback:", err);
-            }
-          };
-          fetchSupabase();
-        }
-      }, [cloudConfig.url, cloudConfig.anonKey]);
+        const timer = setTimeout(initFirebase, 200);
+        return () => {
+          clearTimeout(timer);
+          if (unsubscribeCategories) unsubscribeCategories();
+          if (unsubscribeGames) unsubscribeGames();
+          if (unsubscribeProfiles) unsubscribeProfiles();
+          if (unsubscribeAuth) unsubscribeAuth();
+        };
+      }, []);
 
       useEffect(() => {
         localStorage.setItem("kindy_categories_v3", JSON.stringify(categories));
@@ -1035,6 +1176,7 @@ Please visit the portal to start playing. Happy learning!`
 
       const [createCustomerModal, setCreateCustomerModal] = useState(false);
       const [custFormName, setCustFormName] = useState("");
+      const [custFormPhone, setCustFormPhone] = useState("");
       const [custFormLoginId, setCustFormLoginId] = useState("");
       const [custFormPassword, setCustFormPassword] = useState("");
       const [custFormStatus, setCustFormStatus] = useState("ACTIVE");
@@ -1075,31 +1217,23 @@ Please visit the portal to start playing. Happy learning!`
         }
       };
 
-      const syncWithCloud = async (table, payload, method = "POST", matchCol = "id", matchVal = null) => {
-        const activeUrl = (cloudConfig.url || SUPABASE_PROJECT_URL).trim().replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-        const activeKey = (cloudConfig.anonKey || SUPABASE_PUBLISHABLE_KEY).trim();
-        if (!activeUrl || !activeKey) return;
+      // Direct Firebase Firestore Read/Write Engine
+      const syncWithCloud = async (collectionName, payload, method = "POST", docIdKey = "id", docIdVal = null) => {
+        if (!firebaseServices || !window.FirebaseBridge) return;
+        const { db } = firebaseServices;
+        const { doc, setDoc, deleteDoc } = window.FirebaseBridge;
 
         try {
-          let targetUrl = `${activeUrl}/rest/v1/${table}`;
-          if (method === "PATCH" || method === "DELETE") {
-            targetUrl += `?${matchCol}=eq.${encodeURIComponent(matchVal)}`;
+          const finalDocId = docIdVal || payload?.id || `item_${Date.now()}`;
+          const docRef = doc(db, `kindy_${collectionName}`, finalDocId);
+
+          if (method === "DELETE") {
+            await deleteDoc(docRef);
+          } else {
+            await setDoc(docRef, { ...payload, id: finalDocId, updated_at: new Date().toISOString() }, { merge: true });
           }
-
-          const headers = {
-            ...buildSupabaseHeaders(activeKey),
-            "Content-Type": "application/json",
-            "Prefer": "return=minimal"
-          };
-
-          const res = await fetch(targetUrl, {
-            method: method,
-            headers: headers,
-            body: method !== "DELETE" ? JSON.stringify(payload) : undefined
-          });
-          if (!res.ok) console.warn(`Cloud sync warning for ${table}:`, await res.text());
         } catch (e) {
-          console.warn(`Cloud sync error for ${table}:`, e);
+          console.warn(`Firebase Cloud sync notice for ${collectionName}:`, e);
         }
       };
 
@@ -1121,6 +1255,7 @@ Please visit the portal to start playing. Happy learning!`
                   id: "usr-admin-master",
                   login_id: CONFIG_ADMIN_LOGIN_ID,
                   display_name: "Portal Administrator",
+                  phone_number: "",
                   salt: salt,
                   password_hash: hash,
                   role: "ADMIN",
@@ -1131,6 +1266,7 @@ Please visit the portal to start playing. Happy learning!`
                   created_at: new Date().toISOString()
                 };
                 setUsers(prev => [...prev.filter(u => u.login_id.toLowerCase() !== CONFIG_ADMIN_LOGIN_ID.toLowerCase()), adminUser]);
+                syncWithCloud("profiles", adminUser, "POST");
               }
               setCurrentUser(adminUser);
               setLoginIdInput("");
@@ -1316,7 +1452,7 @@ Please visit the portal to start playing. Happy learning!`
           const updated = categories.map(c => c.id === categoryModal.editing.id ? { ...c, ...catData } : c);
           setCategories(updated);
           syncWithCloud("categories", catData, "PATCH", "id", categoryModal.editing.id);
-          showToast("Category world updated.");
+          showToast(lang === 'ms' ? "Dunia kategori dikemas kini." : "Category world updated.");
         } else {
           const newCat = {
             id: `cat-${Date.now()}`,
@@ -1326,7 +1462,7 @@ Please visit the portal to start playing. Happy learning!`
           const updated = [...categories, newCat];
           setCategories(updated);
           syncWithCloud("categories", newCat, "POST");
-          showToast("New category world created!");
+          showToast(lang === 'ms' ? "Dunia kategori baru dicipta!" : "New category world created!");
         }
         setCategoryModal({ open: false, editing: null });
       };
@@ -1343,14 +1479,16 @@ Please visit the portal to start playing. Happy learning!`
         setConfirmModal({
           open: true,
           danger: true,
-          title: "Delete Category?",
-          message: `Are you sure you want to permanently delete "${catToDelete?.name || 'this category'}"? This action cannot be undone.`,
+          title: lang === 'ms' ? "Padam Dunia Kategori?" : "Delete Category?",
+          message: lang === 'ms' 
+            ? `Adakah anda pasti mahu memadamkan "${catToDelete?.name || 'kategori ini'}" secara kekal? Tindakan ini tidak boleh diundur.`
+            : `Are you sure you want to permanently delete "${catToDelete?.name || 'this category'}"? This action cannot be undone.`,
           onConfirm: () => {
             const updated = categories.filter(c => c.id !== catId);
             setCategories(updated);
             syncWithCloud("categories", null, "DELETE", "id", catId);
             setConfirmModal({ open: false, title: "", message: "", onConfirm: null, danger: false });
-            showToast("Category permanently deleted.");
+            showToast(lang === 'ms' ? "Kategori berjaya dipadam." : "Category permanently deleted.");
           }
         });
       };
@@ -1360,7 +1498,7 @@ Please visit the portal to start playing. Happy learning!`
           const updated = games.map(g => g.id === gameModal.editing.id ? { ...g, ...gameData } : g);
           setGames(updated);
           syncWithCloud("games", gameData, "PATCH", "id", gameModal.editing.id);
-          showToast("Game updated successfully.");
+          showToast(lang === 'ms' ? "Game berjaya dikemas kini." : "Game updated successfully.");
         } else {
           const newG = {
             id: `game-${Date.now()}`,
@@ -1371,7 +1509,7 @@ Please visit the portal to start playing. Happy learning!`
           const updated = [...games, newG];
           setGames(updated);
           syncWithCloud("games", newG, "POST");
-          showToast("New game published to kingdom!");
+          showToast(lang === 'ms' ? "Game baru berjaya diterbitkan ke arked!" : "New game published to kingdom!");
         }
         setGameModal({ open: false, editing: null });
       };
@@ -1382,14 +1520,16 @@ Please visit the portal to start playing. Happy learning!`
         setConfirmModal({
           open: true,
           danger: true,
-          title: "Delete Game?",
-          message: `Are you sure you want to permanently delete "${gameToDelete?.title || 'this game'}"?`,
+          title: lang === 'ms' ? "Padam Permainan Ini?" : "Delete Game?",
+          message: lang === 'ms'
+            ? `Adakah anda pasti mahu memadamkan "${gameToDelete?.title || 'permainan ini'}" secara kekal?`
+            : `Are you sure you want to permanently delete "${gameToDelete?.title || 'this game'}"?`,
           onConfirm: () => {
             const updated = games.filter(g => g.id !== gameId);
             setGames(updated);
             syncWithCloud("games", null, "DELETE", "id", gameId);
             setConfirmModal({ open: false, title: "", message: "", onConfirm: null, danger: false });
-            showToast("Game permanently deleted.");
+            showToast(lang === 'ms' ? "Game dipadam secara kekal." : "Game permanently deleted.");
           }
         });
       };
@@ -1411,37 +1551,6 @@ Please visit the portal to start playing. Happy learning!`
         showToast("Fail catalogue.json berjaya dimuat turun!");
       };
 
-      const handleCopyCatalogueJson = () => {
-        const payload = {
-          exported_at: new Date().toISOString(),
-          app: "Kindy Klub",
-          categories: categories,
-          games: games
-        };
-        navigator.clipboard.writeText(JSON.stringify(payload, null, 2)).then(() => {
-          showToast("Data JSON disalin ke clipboard!");
-        }).catch(() => {
-          showToast("Berjaya disalin.");
-        });
-      };
-
-      const handleImportCatalogueFile = (e) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          try {
-            const parsed = JSON.parse(event.target.result);
-            if (Array.isArray(parsed.categories)) setCategories(parsed.categories);
-            if (Array.isArray(parsed.games)) setGames(parsed.games);
-            showToast("Data catalogue.json berjaya diimport!");
-          } catch (err) {
-            showToast("Format fail JSON tidak sah.", "error");
-          }
-        };
-        reader.readAsText(file);
-      };
-
       const handlePurgeLegacyData = () => {
         setConfirmModal({
           open: true,
@@ -1461,43 +1570,11 @@ Please visit the portal to start playing. Happy learning!`
         });
       };
 
-      const handleSaveCloudConfig = async (e) => {
-        e.preventDefault();
-        const form = e.target;
-        const rawUrl = form.cloudUrl.value.trim();
-        const key = form.cloudKey.value.trim();
-        const url = rawUrl.replace(/\/rest\/v1\/?$/, '').replace(/\/$/, '');
-
-        if (!url || !key) {
-          showToast("Sila masukkan Project URL dan Anon Key.", "error");
-          return;
-        }
-
-        setCloudStatus("testing");
-        try {
-          const res = await fetch(`${url}/rest/v1/categories?select=id&limit=1`, {
-            headers: buildSupabaseHeaders(key)
-          });
-
-          if (res.ok) {
-            const newConf = { url, anonKey: key, isConnected: true };
-            setCloudConfig(newConf);
-            localStorage.setItem("kindy_cloud_config_v1", JSON.stringify(newConf));
-            setCloudStatus("connected");
-            showToast("Sambungan Supabase Cloud Berjaya! Live database aktif.");
-          } else {
-            throw new Error(await res.text());
-          }
-        } catch (err) {
-          setCloudStatus("error");
-          showToast("Gagal menyambung ke Supabase. Sila semak URL atau API Key.", "error");
-        }
-      };
-
       const handleOpenCreateCustomer = () => {
         const initialPass = generateFriendlyPassword();
         const initialLogin = generateLoginIdFromName("Explorer");
         setCustFormName("");
+        setCustFormPhone("");
         setCustFormLoginId(initialLogin);
         setCustFormPassword(initialPass);
         setCustFormStatus("ACTIVE");
@@ -1545,6 +1622,7 @@ Please visit the portal to start playing. Happy learning!`
           id: `usr-cust-${Date.now()}`,
           login_id: cleanLoginId,
           display_name: custFormName.trim() || "Kindy Explorer",
+          phone_number: custFormPhone.trim(),
           salt: newSalt,
           password_hash: newHash,
           role: "CUSTOMER",
@@ -1565,6 +1643,7 @@ Please visit the portal to start playing. Happy learning!`
           open: true,
           data: {
             name: newCustomer.display_name,
+            phone: newCustomer.phone_number,
             loginId: newCustomer.login_id,
             password: custFormPassword
           }
@@ -1597,6 +1676,7 @@ Please visit the portal to start playing. Happy learning!`
           open: true,
           data: {
             name: user.display_name,
+            phone: user.phone_number || "",
             loginId: user.login_id,
             password: newTempPass,
             isReset: true
@@ -1621,17 +1701,17 @@ Please visit the portal to start playing. Happy learning!`
         showToast(`${user.display_name} status updated to ${nextStatus}.`);
       };
 
-      const handleDeleteCustomer = (userId) => {
+      const handleDeleteCustomer = (user) => {
         setConfirmModal({
           open: true,
           danger: true,
-          title: "Delete Customer Account?",
-          message: "This will remove the customer's account and access permanently.",
+          title: t.adminCustDeletePrompt,
+          message: `${t.adminCustDeleteWarn} [${user.display_name} (${user.login_id})]`,
           onConfirm: () => {
-            setUsers(users.filter(u => u.id !== userId));
-            syncWithCloud("profiles", null, "DELETE", "id", userId);
+            setUsers(users.filter(u => u.id !== user.id));
+            syncWithCloud("profiles", null, "DELETE", "id", user.id);
             setConfirmModal({ open: false, title: "", message: "", onConfirm: null, danger: false });
-            showToast("Customer account removed.");
+            showToast(lang === 'ms' ? `Akaun ${user.display_name} telah dipadam secara kekal.` : `Customer account ${user.display_name} permanently deleted.`);
           }
         });
       };
@@ -1696,13 +1776,13 @@ Please visit the portal to start playing. Happy learning!`
                     onClick={() => setConfirmModal({ open: false, title: "", message: "", onConfirm: null, danger: false })}
                     className="flex-1 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 font-heading font-bold text-slate-700 text-sm"
                   >
-                    Batal
+                    {t.modalCancelBtn}
                   </button>
                   <button
                     onClick={confirmModal.onConfirm}
                     className="flex-1 py-3 rounded-2xl bg-[#E9285F] hover:bg-[#c01c4c] text-white font-heading font-bold text-sm shadow-md"
                   >
-                    Padam Terus
+                    {lang === 'ms' ? "Padam Terus" : "Delete Permanently"}
                   </button>
                 </div>
               </div>
@@ -1759,8 +1839,8 @@ Please visit the portal to start playing. Happy learning!`
               <div className="bg-white rounded-[36px] max-w-lg w-full p-6 sm:p-8 shadow-2xl border-4 border-[#FD60C7] max-h-[90vh] flex flex-col animate-float" style={{ animationIterationCount: 1, animationDuration: '0.3s' }}>
                 <div className="flex items-center justify-between pb-4 border-b-2 border-slate-100">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-2xl bg-[#FD60C7]/15 text-[#FD60C7] flex items-center justify-center">
-                      <Icon name="scroll" className="w-6 h-6 text-[#FD60C7]" />
+                    <div className="w-10 h-10 rounded-2xl bg-[#E9285F]/15 text-[#E9285F] flex items-center justify-center">
+                      <Icon name="alert" className="w-6 h-6 text-[#E9285F]" />
                     </div>
                     <div>
                       <h3 className="font-heading font-bold text-lg sm:text-xl text-slate-900">
@@ -1781,13 +1861,14 @@ Please visit the portal to start playing. Happy learning!`
 
                 <div className="py-4 overflow-y-auto space-y-3 pr-1 flex-1">
                   {t.termsItems.map((item, index) => {
-                    const isLegalWarning = index === 5;
+                    const isLegalWarning = index >= 5;
                     const itemNumberColors = [
                       'bg-[#07bdff]/20 text-[#028ec4] border-[#07bdff]',
                       'bg-[#a890ff]/20 text-[#7c62d6] border-[#a890ff]',
                       'bg-[#fd7a39]/20 text-[#c75618] border-[#fd7a39]',
                       'bg-[#00c69e]/20 text-[#008f72] border-[#00c69e]',
                       'bg-[#FD60C7]/20 text-[#c81d86] border-[#FD60C7]',
+                      'bg-[#E9285F]/20 text-[#E9285F] border-[#E9285F]',
                       'bg-[#E9285F]/20 text-[#E9285F] border-[#E9285F]'
                     ];
                     return (
@@ -1824,32 +1905,33 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* TOP NAVIGATION — Full Solid Background + Strict Dynamic Island Clearance */}
+          {/* TOP NAVIGATION — Full Solid Background + Dynamic Island Clearance */}
           {currentView !== 'welcome' && currentView !== 'player' && (
             <header className="sticky top-0 z-40 bg-white border-b-4 border-[#AEE9F3] shadow-md app-header-safe">
-              <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pb-3 pt-1 flex items-center justify-between gap-2">
+              <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 pb-3 pt-1 flex items-center justify-between gap-1.5 sm:gap-2">
                 <div
                   onClick={() => routeUser(currentUser)}
-                  className="flex items-center gap-2 sm:gap-2.5 cursor-pointer group flex-shrink-0"
+                  className="flex items-center gap-1.5 sm:gap-2.5 cursor-pointer group flex-shrink-0"
                 >
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl overflow-hidden border-2 border-[#FD60C7] shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
+                  <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl overflow-hidden border-2 border-[#FD60C7] shadow-md group-hover:scale-105 transition-transform flex-shrink-0">
                     <img src="https://imglink.cc/cdn/hLANhrGMSL.jpeg" alt="Kindy Klub Icon" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex flex-col justify-center min-w-0">
-                    <span className="font-heading text-sm sm:text-lg lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-[#FD60C7] via-[#07bdff] to-[#00c69e] bg-clip-text text-transparent whitespace-nowrap leading-none">
+                    <span className="font-heading text-xs sm:text-lg lg:text-2xl font-bold tracking-tight bg-gradient-to-r from-[#FD60C7] via-[#07bdff] to-[#00c69e] bg-clip-text text-transparent whitespace-nowrap leading-none">
                       Kindy Klub
                     </span>
-                    <span className="text-[8px] sm:text-[9.5px] tracking-wider uppercase font-extrabold text-[#a890ff] whitespace-nowrap leading-none mt-1 mb-0.5 block">
+                    <span className="text-[7.5px] sm:text-[9.5px] tracking-wider uppercase font-extrabold text-[#a890ff] whitespace-nowrap leading-none mt-1 mb-0.5 block">
                       Magical Game Arcade
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-1.5 sm:gap-2.5 flex-shrink-0">
-                  <div className="flex items-center p-0.5 sm:p-1 rounded-2xl bg-[#AEE9F3]/40 border-2 border-[#07bdff]">
+                <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                  {/* Language Switcher */}
+                  <div className="flex items-center p-0.5 rounded-xl sm:rounded-2xl bg-[#AEE9F3]/40 border-2 border-[#07bdff]">
                     <button
                       onClick={() => setLang('ms')}
-                      className={`px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-heading font-bold transition-all ${
+                      className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg sm:rounded-xl text-[9.5px] sm:text-xs font-heading font-bold transition-all ${
                         lang === 'ms'
                           ? 'bg-[#FD60C7] text-white shadow-sm'
                           : 'text-slate-700 hover:text-slate-900'
@@ -1859,7 +1941,7 @@ Please visit the portal to start playing. Happy learning!`
                     </button>
                     <button
                       onClick={() => setLang('en')}
-                      className={`px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-xl text-[10px] sm:text-xs font-heading font-bold transition-all ${
+                      className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-lg sm:rounded-xl text-[9.5px] sm:text-xs font-heading font-bold transition-all ${
                         lang === 'en'
                           ? 'bg-[#07bdff] text-white shadow-sm'
                           : 'text-slate-700 hover:text-slate-900'
@@ -1869,28 +1951,39 @@ Please visit the portal to start playing. Happy learning!`
                     </button>
                   </div>
 
+                  {/* Top Bar T&C Alert Button */}
+                  <button
+                    onClick={() => setShowTermsModal(true)}
+                    className="flex items-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl sm:rounded-2xl bg-[#E9285F]/15 hover:bg-[#E9285F]/25 text-[#E9285F] border-2 border-[#E9285F] shadow-sm hover:scale-105 active:scale-95 transition flex-shrink-0"
+                    title={t.termsTitle}
+                  >
+                    <span className="text-xs sm:text-sm font-heading font-bold leading-none">❗️</span>
+                    <span className="text-[10px] sm:text-xs font-heading font-bold uppercase tracking-wider">T&C</span>
+                  </button>
+
+                  {/* Child Profile Button */}
                   {currentUser && (
                     <button
                       onClick={() => {
                         setChildFormMode('list');
                         setShowChildProfilesModal(true);
                       }}
-                      className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#FD60C7]/15 to-[#07bdff]/15 border-2 border-[#FD60C7] hover:border-[#ff68bd] hover:scale-105 active:scale-95 transition shadow-sm"
+                      className="flex items-center gap-1 sm:gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#FD60C7]/15 to-[#07bdff]/15 border-2 border-[#FD60C7] hover:border-[#ff68bd] hover:scale-105 active:scale-95 transition shadow-sm flex-shrink-0"
                       title={t.switchProfile}
                     >
-                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl flex items-center justify-center bg-[#FD60C7] text-white shadow-sm flex-shrink-0">
+                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg sm:rounded-xl flex items-center justify-center bg-[#FD60C7] text-white shadow-sm flex-shrink-0">
                         <Icon name={currentActiveChild?.avatar || 'star'} className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                       </div>
-                      <div className="text-left hidden sm:block">
-                        <span className="text-[8px] uppercase font-extrabold text-[#FD60C7] block leading-tight">{t.playingAs}</span>
-                        <span className="text-xs font-heading font-bold text-slate-800 block leading-tight line-clamp-1 max-w-[85px]">
+                      <div className="text-left hidden md:block">
+                        <span className="text-[7.5px] uppercase font-extrabold text-[#FD60C7] block leading-tight">{t.playingAs}</span>
+                        <span className="text-xs font-heading font-bold text-slate-800 block leading-tight line-clamp-1 max-w-[80px]">
                           {currentActiveChild?.name || currentUser?.display_name}
                         </span>
                       </div>
-                      <Icon name="edit" className="w-3 h-3 text-[#FD60C7] hidden sm:block" />
                     </button>
                   )}
 
+                  {/* Admin Console Toggle */}
                   {currentUser?.role === 'ADMIN' && (
                     <button
                       onClick={() => {
@@ -1900,7 +1993,7 @@ Please visit the portal to start playing. Happy learning!`
                           setCurrentView('admin');
                         }
                       }}
-                      className="px-2 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl bg-[#AEE9F3]/60 hover:bg-[#AEE9F3] text-slate-800 border-2 border-[#07bdff] font-heading font-bold text-[10px] sm:text-xs uppercase tracking-wider flex items-center gap-1.5 transition shadow-sm whitespace-nowrap"
+                      className="px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl sm:rounded-2xl bg-[#AEE9F3]/60 hover:bg-[#AEE9F3] text-slate-800 border-2 border-[#07bdff] font-heading font-bold text-[9.5px] sm:text-xs uppercase tracking-wider flex items-center gap-1 transition shadow-sm whitespace-nowrap flex-shrink-0"
                     >
                       <Icon name="crown" className="w-3.5 h-3.5 text-[#FD60C7]" />
                       <span className="hidden sm:inline">{currentView === 'admin' ? t.viewArcade : t.adminDashboard}</span>
@@ -1908,19 +2001,14 @@ Please visit the portal to start playing. Happy learning!`
                     </button>
                   )}
 
-                  <div className="flex items-center gap-1.5 sm:gap-2 pl-1 sm:pl-2 border-l-2 border-[#AEE9F3]">
-                    <div className="text-right hidden md:block">
-                      <div className="text-xs font-extrabold text-slate-800">{currentUser?.display_name}</div>
-                      <div className="text-[10px] font-bold text-[#E9285F] uppercase font-mono">
-                        ID: {currentUser?.login_id}
-                      </div>
-                    </div>
+                  {/* Sign Out Button */}
+                  <div className="flex items-center pl-0.5 sm:pl-1 border-l border-slate-200">
                     <button
                       onClick={handleLogout}
                       title="Sign Out"
-                      className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#D7BDED]/40 hover:bg-[#E9285F]/20 text-slate-600 hover:text-[#E9285F] flex items-center justify-center transition border-2 border-[#D7BDED]"
+                      className="w-7 h-7 sm:w-9 sm:h-9 rounded-xl bg-slate-100 hover:bg-[#E9285F]/20 text-slate-500 hover:text-[#E9285F] flex items-center justify-center transition border border-slate-200"
                     >
-                      <Icon name="log-out" className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Icon name="log-out" className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   </div>
                 </div>
@@ -1931,12 +2019,12 @@ Please visit the portal to start playing. Happy learning!`
           {/* MAIN CONTENT ROUTER */}
           <main className="flex-1 flex flex-col relative z-10">
 
-            {/* PAGE 1: WELCOME & LOGIN GATEWAY — Dynamic Island Safe */}
+            {/* PAGE 1: WELCOME & LOGIN GATEWAY */}
             {currentView === 'welcome' && (
               <div className="relative min-h-screen flex flex-col items-center justify-start px-4 pb-12 frontpage-safe-top">
                 <MagicalArcadeBackground />
 
-                {/* Top Language Toggle Bar (Safely below Dynamic Island & Clock) */}
+                {/* Top Language Toggle Bar */}
                 <div className="relative z-30 w-full max-w-md flex justify-end mb-3 pr-2">
                   <div className="flex items-center p-1 rounded-full bg-white/95 backdrop-blur-md border-3 border-[#AEE9F3] shadow-md">
                     <button
@@ -2067,9 +2155,9 @@ Please visit the portal to start playing. Happy learning!`
                     <button
                       type="button"
                       onClick={() => setShowTermsModal(true)}
-                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-[#FD60C7] font-heading font-bold text-xs sm:text-sm shadow-md border-3 border-[#D7BDED] hover:border-[#FD60C7] transition-all hover:scale-105 active:scale-95"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-[#E9285F] font-heading font-bold text-xs sm:text-sm shadow-md border-3 border-[#D7BDED] hover:border-[#E9285F] transition-all hover:scale-105 active:scale-95"
                     >
-                      <Icon name="scroll" className="w-4 h-4 text-[#FD60C7]" />
+                      <span className="text-sm font-heading font-bold leading-none">❗️</span>
                       <span>{t.termsBtn}</span>
                     </button>
                   </div>
@@ -2443,7 +2531,7 @@ Please visit the portal to start playing. Happy learning!`
                               <h3 className="font-heading font-bold text-lg text-slate-900 mt-3">{cat.name}</h3>
                               <p className="text-slate-500 text-xs mt-1 line-clamp-2 font-semibold">{cat.description}</p>
                               <span className="text-[11px] font-extrabold text-[#07bdff] block mt-2">
-                                {games.filter(g => g.category_id === cat.id).length} games assigned
+                                {games.filter(g => g.category_id === cat.id).length} {lang === 'ms' ? 'permainan berdaftar' : 'games assigned'}
                               </span>
                             </div>
 
@@ -2452,7 +2540,7 @@ Please visit the portal to start playing. Happy learning!`
                                 onClick={() => setCategoryModal({ open: true, editing: cat })}
                                 className="flex-1 py-2 bg-[#AEE9F3]/40 hover:bg-[#AEE9F3] text-slate-800 font-heading font-bold text-xs rounded-xl transition"
                               >
-                                Edit
+                                {t.editChildBtn}
                               </button>
                               <button
                                 onClick={() => handleDeleteCategory(cat.id)}
@@ -2506,16 +2594,16 @@ Please visit the portal to start playing. Happy learning!`
                         )}
                       </div>
                     ) : (
-                      <div className="bg-white rounded-3xl border-4 border-[#ff68bd]/30 shadow-sm overflow-hidden">
-                        <table className="w-full text-left border-collapse">
+                      <div className="bg-white rounded-3xl border-4 border-[#ff68bd]/30 shadow-sm overflow-hidden overflow-x-auto">
+                        <table className="w-full text-left border-collapse min-w-[650px]">
                           <thead>
                             <tr className="bg-[#ff68bd]/15 border-b-2 border-[#ff68bd]/30 text-xs uppercase font-heading text-slate-700">
-                              <th className="py-4 px-6">Thumbnail (1:1)</th>
-                              <th className="py-4 px-6">Game Title</th>
-                              <th className="py-4 px-6">Category</th>
-                              <th className="py-4 px-6">Type</th>
-                              <th className="py-4 px-6">Status</th>
-                              <th className="py-4 px-6 text-right">Actions</th>
+                              <th className="py-4 px-6">{lang === 'ms' ? 'Thumbnail (1:1)' : 'Thumbnail (1:1)'}</th>
+                              <th className="py-4 px-6">{lang === 'ms' ? 'Tajuk Game' : 'Game Title'}</th>
+                              <th className="py-4 px-6">{lang === 'ms' ? 'Dunia Kategori' : 'Category'}</th>
+                              <th className="py-4 px-6">{lang === 'ms' ? 'Jenis' : 'Type'}</th>
+                              <th className="py-4 px-6">{lang === 'ms' ? 'Status' : 'Status'}</th>
+                              <th className="py-4 px-6 text-right">{lang === 'ms' ? 'Tindakan' : 'Actions'}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 text-sm font-bold">
@@ -2534,7 +2622,7 @@ Please visit the portal to start playing. Happy learning!`
                                   </td>
                                   <td className="py-3 px-6">
                                     <span className="text-xs font-extrabold text-[#FD60C7] bg-[#ff68bd]/15 px-3 py-1 rounded-lg">
-                                      {cat?.name || "Unassigned"}
+                                      {cat?.name || (lang === 'ms' ? "Tiada Kategori" : "Unassigned")}
                                     </span>
                                   </td>
                                   <td className="py-3 px-6 font-mono text-xs text-slate-500">
@@ -2592,9 +2680,9 @@ Please visit the portal to start playing. Happy learning!`
                   <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl border-4 border-[#00c69e]/30 shadow-sm">
                       <div>
-                        <h3 className="font-heading font-bold text-xl text-slate-900">Customer Family Passes</h3>
+                        <h3 className="font-heading font-bold text-xl text-slate-900">{t.adminCustBannerTitle}</h3>
                         <p className="text-xs text-slate-500 font-bold mt-0.5">
-                          Customers contact Admin via WhatsApp with their purchase receipt. Admin verifies and creates the account here.
+                          {t.adminCustBannerDesc}
                         </p>
                       </div>
 
@@ -2602,7 +2690,7 @@ Please visit the portal to start playing. Happy learning!`
                         <div className="relative">
                           <input
                             type="text"
-                            placeholder="Search by name or Login ID..."
+                            placeholder={t.adminCustSearchPh}
                             value={customerSearch}
                             onChange={(e) => setCustomerSearch(e.target.value)}
                             className="pl-9 pr-4 py-2.5 rounded-2xl bg-slate-50 border-2 border-[#00c69e]/40 text-xs font-bold focus:outline-none w-56 sm:w-64"
@@ -2620,24 +2708,25 @@ Please visit the portal to start playing. Happy learning!`
                       </div>
                     </div>
 
-                    <div className="bg-white rounded-3xl border-4 border-[#00c69e]/30 shadow-sm overflow-hidden">
+                    <div className="bg-white rounded-3xl border-4 border-[#00c69e]/30 shadow-sm overflow-hidden overflow-x-auto">
                       {users.filter(u => u.role === 'CUSTOMER').length === 0 ? (
                         <div className="p-12 text-center">
                           <Icon name="family" className="w-14 h-14 text-[#00c69e] mx-auto mb-2" />
-                          <h4 className="font-heading font-bold text-slate-800 text-lg">No Customer Accounts Yet</h4>
+                          <h4 className="font-heading font-bold text-slate-800 text-lg">{t.adminCustNoTitle}</h4>
                           <p className="text-slate-500 font-bold text-xs mt-1">
-                            When parents message via WhatsApp with their purchase receipt, click "+ Create Customer" to issue their login pass.
+                            {t.adminCustNoDesc}
                           </p>
                         </div>
                       ) : (
-                        <table className="w-full text-left border-collapse">
+                        <table className="w-full text-left border-collapse min-w-[700px]">
                           <thead>
                             <tr className="bg-[#00c69e]/15 border-b-2 border-[#00c69e]/30 text-xs uppercase font-heading text-slate-700">
-                              <th className="py-4 px-6">Customer / Family Name</th>
-                              <th className="py-4 px-6">Login ID</th>
-                              <th className="py-4 px-6">Access Status</th>
-                              <th className="py-4 px-6">Ongoing Access</th>
-                              <th className="py-4 px-6 text-right">Actions</th>
+                              <th className="py-4 px-6">{t.adminCustColName}</th>
+                              <th className="py-4 px-6">{t.adminCustColPhone}</th>
+                              <th className="py-4 px-6">{t.adminCustColLogin}</th>
+                              <th className="py-4 px-6">{t.adminCustColStatus}</th>
+                              <th className="py-4 px-6">{t.adminCustColAccess}</th>
+                              <th className="py-4 px-6 text-right">{t.adminCustColActions}</th>
                             </tr>
                           </thead>
                           <tbody className="divide-y divide-slate-100 text-sm font-bold">
@@ -2645,17 +2734,33 @@ Please visit the portal to start playing. Happy learning!`
                               .filter(u => u.role === 'CUSTOMER')
                               .filter(u =>
                                 u.display_name.toLowerCase().includes(customerSearch.toLowerCase()) ||
-                                u.login_id.toLowerCase().includes(customerSearch.toLowerCase())
+                                u.login_id.toLowerCase().includes(customerSearch.toLowerCase()) ||
+                                (u.phone_number && u.phone_number.includes(customerSearch))
                               )
                               .map((cust) => (
                                 <tr key={cust.id} className="hover:bg-slate-50/80 transition">
                                   <td className="py-4 px-6">
                                     <div className="font-heading font-bold text-slate-900">{cust.display_name}</div>
                                     <span className="text-[11px] text-slate-400 font-semibold">
-                                      Created: {new Date(cust.created_at).toLocaleDateString()}
+                                      {lang === 'ms' ? 'Didaftar: ' : 'Created: '}{new Date(cust.created_at).toLocaleDateString()}
                                     </span>
                                   </td>
-                                  <td className="py-4 px-6 font-mono text-xs font-bold text-[#FD60C7] bg-[#D7BDED]/30">
+                                  <td className="py-4 px-6 font-mono text-xs text-slate-600">
+                                    {cust.phone_number ? (
+                                      <a
+                                        href={`https://wa.me/${cleanPhoneNumberForWa(cust.phone_number)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#00c69e]/10 text-[#008f72] hover:bg-[#00c69e]/20 transition"
+                                      >
+                                        <Icon name="phone" className="w-3.5 h-3.5 text-[#00c69e]" />
+                                        <span>{cust.phone_number}</span>
+                                      </a>
+                                    ) : (
+                                      <span className="text-slate-300 italic">—</span>
+                                    )}
+                                  </td>
+                                  <td className="py-4 px-6 font-mono text-xs font-bold text-[#FD60C7] bg-[#D7BDED]/20">
                                     {cust.login_id}
                                   </td>
                                   <td className="py-4 px-6">
@@ -2671,34 +2776,34 @@ Please visit the portal to start playing. Happy learning!`
                                     {cust.status === 'ACTIVE' ? (
                                       <span className="text-[#008f72] flex items-center gap-1.5">
                                         <Icon name="sparkles" className="w-3.5 h-3.5 text-[#00c69e]" />
-                                        Full Access (All Games)
+                                        {lang === 'ms' ? 'Penuh (Semua Game)' : 'Full Access'}
                                       </span>
                                     ) : (
-                                      <span className="text-[#E9285F]">Access Suspended</span>
+                                      <span className="text-[#E9285F]">{lang === 'ms' ? 'Disekat Sementara' : 'Suspended'}</span>
                                     )}
                                   </td>
-                                  <td className="py-4 px-6 text-right space-x-2">
+                                  <td className="py-4 px-6 text-right space-x-1.5 whitespace-nowrap">
                                     <button
                                       onClick={() => handleAdminResetPassword(cust)}
-                                      className="px-3 py-1.5 rounded-xl bg-[#07bdff]/20 hover:bg-[#07bdff] text-[#07bdff] hover:text-white text-xs font-heading font-bold transition"
-                                      title="Reset Password & Generate Slip"
+                                      className="px-2.5 py-1.5 rounded-xl bg-[#07bdff]/20 hover:bg-[#07bdff] text-[#07bdff] hover:text-white text-xs font-heading font-bold transition"
+                                      title={lang === 'ms' ? "Tukar Kata Laluan" : "Reset Password"}
                                     >
-                                      Reset Pass
+                                      Reset
                                     </button>
                                     <button
                                       onClick={() => handleToggleStatus(cust)}
-                                      className={`px-3 py-1.5 rounded-xl text-xs font-heading font-bold transition ${
+                                      className={`px-2.5 py-1.5 rounded-xl text-xs font-heading font-bold transition ${
                                         cust.status === 'ACTIVE'
-                                          ? 'bg-[#E9285F]/20 text-[#E9285F] hover:bg-[#E9285F] hover:text-white'
+                                          ? 'bg-[#fd7a39]/20 text-[#c75618] hover:bg-[#fd7a39] hover:text-white'
                                           : 'bg-[#00c69e]/20 text-[#008f72] hover:bg-[#00c69e] hover:text-white'
                                       }`}
                                     >
-                                      {cust.status === 'ACTIVE' ? 'Suspend' : 'Activate'}
+                                      {cust.status === 'ACTIVE' ? (lang === 'ms' ? 'Sekat' : 'Suspend') : (lang === 'ms' ? 'Aktif' : 'Activate')}
                                     </button>
                                     <button
-                                      onClick={() => handleDeleteCustomer(cust.id)}
-                                      className="p-2 rounded-xl bg-slate-100 hover:bg-[#E9285F]/20 text-slate-500 hover:text-[#E9285F] transition"
-                                      title="Remove Account"
+                                      onClick={() => handleDeleteCustomer(cust)}
+                                      className="p-1.5 rounded-xl bg-[#E9285F]/15 hover:bg-[#E9285F] text-[#E9285F] hover:text-white transition inline-flex items-center justify-center align-middle"
+                                      title={lang === 'ms' ? "Padam Pengguna Ini Secara Kekal" : "Delete Customer Permanently"}
                                     >
                                       <Icon name="trash" className="w-4 h-4" />
                                     </button>
@@ -2717,98 +2822,59 @@ Please visit the portal to start playing. Happy learning!`
                   <div className="space-y-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
                       <div className="bg-white p-6 rounded-3xl border-4 border-[#07bdff] shadow-sm">
-                        <span className="text-xs font-extrabold text-[#07bdff] uppercase tracking-wider">Worlds</span>
+                        <span className="text-xs font-extrabold text-[#07bdff] uppercase tracking-wider">{t.adminTabCategories}</span>
                         <div className="font-heading text-4xl font-bold text-slate-900 mt-1">{categories.length}</div>
-                        <span className="text-xs text-slate-500 font-bold">Active Categories</span>
+                        <span className="text-xs text-slate-500 font-bold">{lang === 'ms' ? 'Dunia Aktif' : 'Active Categories'}</span>
                       </div>
                       <div className="bg-white p-6 rounded-3xl border-4 border-[#fd7a39] shadow-sm">
-                        <span className="text-xs font-extrabold text-[#fd7a39] uppercase tracking-wider">Games</span>
+                        <span className="text-xs font-extrabold text-[#fd7a39] uppercase tracking-wider">{t.adminTabGames}</span>
                         <div className="font-heading text-4xl font-bold text-slate-900 mt-1">{games.length}</div>
-                        <span className="text-xs text-[#00c69e] font-extrabold">{games.filter(g => g.is_published).length} Published</span>
+                        <span className="text-xs text-[#00c69e] font-extrabold">{games.filter(g => g.is_published).length} {lang === 'ms' ? 'Diterbitkan' : 'Published'}</span>
                       </div>
                       <div className="bg-white p-6 rounded-3xl border-4 border-[#00c69e] shadow-sm">
-                        <span className="text-xs font-extrabold text-[#00c69e] uppercase tracking-wider">Active Customers</span>
+                        <span className="text-xs font-extrabold text-[#00c69e] uppercase tracking-wider">{lang === 'ms' ? 'Pelanggan Aktif' : 'Active Customers'}</span>
                         <div className="font-heading text-4xl font-bold text-slate-900 mt-1">
                           {users.filter(u => u.status === 'ACTIVE' && u.role === 'CUSTOMER').length}
                         </div>
-                        <span className="text-xs text-slate-500 font-bold">Eligible Families</span>
+                        <span className="text-xs text-slate-500 font-bold">{lang === 'ms' ? 'Keluarga Berdaftar' : 'Eligible Families'}</span>
                       </div>
                       <div className="bg-white p-6 rounded-3xl border-4 border-[#E9285F] shadow-sm">
-                        <span className="text-xs font-extrabold text-[#E9285F] uppercase tracking-wider">Suspended</span>
+                        <span className="text-xs font-extrabold text-[#E9285F] uppercase tracking-wider">{lang === 'ms' ? 'Disekat' : 'Suspended'}</span>
                         <div className="font-heading text-4xl font-bold text-slate-900 mt-1">
                           {users.filter(u => u.status === 'SUSPENDED').length}
                         </div>
-                        <span className="text-xs text-slate-500 font-bold">Accounts Paused</span>
+                        <span className="text-xs text-slate-500 font-bold">{lang === 'ms' ? 'Akses Ditahan' : 'Accounts Paused'}</span>
                       </div>
                     </div>
 
-                    <div className="bg-white p-6 sm:p-8 rounded-[36px] border-4 border-[#07bdff] shadow-lg">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 rounded-2xl bg-[#07bdff]/20 text-[#07bdff] flex items-center justify-center">
+                    <div className="bg-white p-6 sm:p-8 rounded-[36px] border-4 border-[#00c69e] shadow-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-2xl bg-[#00c69e]/20 text-[#008f72] flex items-center justify-center">
                           <Icon name="cloud" className="w-7 h-7" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <h3 className="font-heading font-bold text-xl text-slate-900">Live Cloud Database (Supabase)</h3>
-                            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-heading font-bold bg-[#00c69e]/20 text-[#008f72] border border-[#00c69e]">
-                              ● Connected (Auto-Sync Active)
+                            <h3 className="font-heading font-bold text-xl text-slate-900">Google Cloud Firebase (Live Status)</h3>
+                            <span className="px-3 py-1 rounded-full text-xs font-heading font-bold bg-[#00c69e]/20 text-[#008f72] border border-[#00c69e]">
+                              ● Sentiasa Aktif (24/7/365 — Tiada Paused)
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 font-bold">
-                            Sambungan cloud Supabase rasmi telah dipasang! Sebarang penambahan game atau pendaftaran akaun pelanggan akan terus diselaraskan ke pelayan cloud.
+                          <p className="text-xs text-slate-500 font-bold mt-1">
+                            Projek ID: <strong className="text-slate-800 font-mono">kindyklub</strong>. Segala akaun pelanggan dan dunia permainan diselaraskan terus ke pelayan Google Cloud.
                           </p>
                         </div>
                       </div>
-
-                      <form onSubmit={handleSaveCloudConfig} className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-[#AEE9F3]/15 p-5 rounded-2xl border-2 border-[#AEE9F3]">
-                        <div>
-                          <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
-                            Supabase Project URL *
-                          </label>
-                          <input
-                            name="cloudUrl"
-                            defaultValue={cloudConfig.url || SUPABASE_PROJECT_URL}
-                            placeholder="https://xyzabcdefg.supabase.co"
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono text-xs focus:border-[#07bdff] focus:outline-none bg-white"
-                          />
-                        </div>
-
-                        <div>
-                          <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
-                            Supabase Anon / Publishable API Key *
-                          </label>
-                          <input
-                            name="cloudKey"
-                            defaultValue={cloudConfig.anonKey || SUPABASE_PUBLISHABLE_KEY}
-                            placeholder="sb_publishable_... atau eyJhbGciOi..."
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-300 font-mono text-xs focus:border-[#07bdff] focus:outline-none bg-white"
-                          />
-                        </div>
-
-                        <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3 pt-2">
-                          <span className="text-[11px] text-[#008f72] font-extrabold flex items-center gap-1">
-                            <Icon name="lightbulb" className="w-4 h-4 text-[#00c69e] flex-shrink-0" />
-                            <span>Projek Supabase Kindy Klub aktif dan dipautkan secara langsung.</span>
-                          </span>
-                          <button
-                            type="submit"
-                            className="px-6 py-2.5 bg-[#07bdff] hover:bg-[#028ec4] text-white font-heading font-bold text-xs uppercase tracking-wider rounded-xl shadow-3d-sky transition"
-                          >
-                            {cloudStatus === 'testing' ? 'Testing Connection...' : 'Simpan / Semak Semula Sambungan'}
-                          </button>
-                        </div>
-                      </form>
                     </div>
 
-                    <div className="bg-white p-6 sm:p-8 rounded-[36px] border-4 border-[#00c69e] shadow-md">
+                    <div className="bg-white p-6 sm:p-8 rounded-[36px] border-4 border-[#07bdff] shadow-md">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 rounded-2xl bg-[#00c69e]/20 text-[#008f72] flex items-center justify-center">
+                        <div className="w-12 h-12 rounded-2xl bg-[#07bdff]/20 text-[#028ec4] flex items-center justify-center">
                           <Icon name="download" className="w-6 h-6" />
                         </div>
                         <div>
                           <h3 className="font-heading font-bold text-xl text-slate-900">Sandaran Tambahan: Fail catalogue.json</h3>
                           <p className="text-xs text-slate-500 font-bold">
-                            Data anda kini selamat di Supabase. Anda juga boleh muat turun salinan sandaran manual bila-bila masa.
+                            Data anda kini selamat di Google Firebase. Anda juga boleh muat turun salinan sandaran manual fail bila-bila masa.
                           </p>
                         </div>
                       </div>
@@ -2821,20 +2887,6 @@ Please visit the portal to start playing. Happy learning!`
                           <Icon name="download" className="w-4 h-4" />
                           <span>Muat Turun catalogue.json</span>
                         </button>
-
-                        <button
-                          onClick={handleCopyCatalogueJson}
-                          className="px-4 py-3 rounded-2xl bg-[#07bdff] hover:bg-[#028ec4] text-white font-heading font-bold text-xs uppercase tracking-wider shadow-3d-sky transition flex items-center gap-2"
-                        >
-                          <Icon name="copy" className="w-4 h-4" />
-                          <span>Salin Kod JSON</span>
-                        </button>
-
-                        <label className="px-4 py-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-heading font-bold text-xs uppercase tracking-wider transition cursor-pointer flex items-center gap-2 border border-slate-300">
-                          <Icon name="upload" className="w-4 h-4" />
-                          <span>Import Fail catalogue.json</span>
-                          <input type="file" accept=".json" onChange={handleImportCatalogueFile} className="hidden" />
-                        </label>
                       </div>
                     </div>
 
@@ -2844,8 +2896,8 @@ Please visit the portal to start playing. Happy learning!`
                           <Icon name="refresh" className="w-5 h-5" />
                         </div>
                         <div>
-                          <h3 className="font-heading font-bold text-lg text-slate-900">Data Hygiene & Catalogue Tools</h3>
-                          <p className="text-xs text-slate-500 font-bold">Safely clear demo categories or cache from earlier versions.</p>
+                          <h3 className="font-heading font-bold text-lg text-slate-900">Pembersihan Memori Peranti</h3>
+                          <p className="text-xs text-slate-500 font-bold">Keluarkan rekod demo lama dari cache pelayar.</p>
                         </div>
                       </div>
 
@@ -2853,7 +2905,7 @@ Please visit the portal to start playing. Happy learning!`
                         <div>
                           <span className="font-heading font-bold text-sm text-slate-800">Purge Legacy Demo Data</span>
                           <p className="text-xs text-slate-500 mt-0.5 font-semibold">
-                            If your browser previously cached sample categories, click this to clear them while preserving all your real categories and customer accounts.
+                            Padam sisa data sampel jika peranti anda pernah memuatkannya sebelum ini.
                           </p>
                         </div>
                         <button
@@ -2870,15 +2922,15 @@ Please visit the portal to start playing. Happy learning!`
             )}
           </main>
 
-          {/* CREATE CUSTOMER ACCOUNT MODAL */}
+          {/* CREATE CUSTOMER ACCOUNT MODAL (With Phone Number Input) */}
           {createCustomerModal && (
             <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-              <div className="bg-white rounded-[36px] max-w-md w-full p-6 sm:p-8 shadow-2xl border-4 border-[#00c69e]">
+              <div className="bg-white rounded-[36px] max-w-md w-full p-6 sm:p-8 shadow-2xl border-4 border-[#00c69e] max-h-[92vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-2">
                     <Icon name="user-plus" className="w-6 h-6 text-[#00c69e]" />
                     <h3 className="font-heading font-bold text-xl text-slate-900">
-                      Create Customer Account
+                      {t.modalCreateCustomerTitle}
                     </h3>
                   </div>
                   <button
@@ -2899,29 +2951,45 @@ Please visit the portal to start playing. Happy learning!`
                 <form onSubmit={handleSaveNewCustomer} className="space-y-4">
                   <div>
                     <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
-                      Customer / Family Name *
+                      {t.modalCustNameLabel}
                     </label>
                     <input
                       type="text"
                       required
                       value={custFormName}
                       onChange={(e) => handleCustomerNameChange(e.target.value)}
-                      placeholder="e.g. Leo & Family"
+                      placeholder={t.modalCustNamePh}
                       className="w-full px-4 py-2.5 rounded-2xl border-3 border-[#AEE9F3] font-bold text-sm focus:border-[#00c69e] focus:outline-none"
                     />
                   </div>
 
                   <div>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalCustPhoneLabel}
+                    </label>
+                    <input
+                      type="tel"
+                      value={custFormPhone}
+                      onChange={(e) => setCustFormPhone(e.target.value)}
+                      placeholder={t.modalCustPhonePh}
+                      className="w-full px-4 py-2.5 rounded-2xl border-3 border-[#AEE9F3] font-bold text-sm focus:border-[#00c69e] focus:outline-none"
+                    />
+                    <span className="text-[11px] text-slate-400 block mt-1 font-semibold">
+                      {lang === 'ms' ? 'Memudahkan anda menghantar WhatsApp terus kepada pelanggan ini.' : 'Allows direct WhatsApp dispatch to this specific parent.'}
+                    </span>
+                  </div>
+
+                  <div>
                     <div className="flex justify-between items-center mb-1">
                       <label className="text-xs font-extrabold uppercase text-slate-600">
-                        Login ID * (Used by family to log in)
+                        {t.modalCustLoginLabel}
                       </label>
                       <button
                         type="button"
                         onClick={() => setCustFormLoginId(generateLoginIdFromName(custFormName))}
                         className="text-[11px] font-extrabold text-[#07bdff] hover:underline"
                       >
-                        Regenerate
+                        {lang === 'ms' ? 'Jana Semula' : 'Regenerate'}
                       </button>
                     </div>
                     <input
@@ -2932,20 +3000,22 @@ Please visit the portal to start playing. Happy learning!`
                       placeholder="e.g. kk-leo-482"
                       className="w-full px-4 py-2.5 rounded-2xl border-3 border-[#D7BDED] font-mono font-bold text-sm text-[#FD60C7] bg-[#D7BDED]/20 focus:border-[#00c69e] focus:outline-none"
                     />
-                    <span className="text-[11px] text-slate-400 block mt-1 font-semibold">Unique identifier. Must be lowercase without spaces.</span>
+                    <span className="text-[11px] text-slate-400 block mt-1 font-semibold">
+                      {lang === 'ms' ? 'Pengenal pasti unik. Huruf kecil tanpa jarak.' : 'Unique identifier. Lowercase without spaces.'}
+                    </span>
                   </div>
 
                   <div>
                     <div className="flex justify-between items-center mb-1">
                       <label className="text-xs font-extrabold uppercase text-slate-600">
-                        Initial Temporary Password *
+                        {t.modalCustPassLabel}
                       </label>
                       <button
                         type="button"
                         onClick={() => setCustFormPassword(generateFriendlyPassword())}
                         className="text-[11px] font-extrabold text-[#07bdff] hover:underline"
                       >
-                        Generate New
+                        {lang === 'ms' ? 'Jana Baru' : 'Generate New'}
                       </button>
                     </div>
                     <input
@@ -2966,7 +3036,7 @@ Please visit the portal to start playing. Happy learning!`
                       className="w-4 h-4 text-[#00c69e] rounded"
                     />
                     <label htmlFor="must_change_pass" className="text-xs font-extrabold text-slate-700">
-                      Prompt customer to set personal password on first login
+                      {t.modalCustMustChange}
                     </label>
                   </div>
 
@@ -2976,13 +3046,13 @@ Please visit the portal to start playing. Happy learning!`
                       onClick={() => setCreateCustomerModal(false)}
                       className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-heading font-bold text-sm"
                     >
-                      Batal
+                      {t.modalCancelBtn}
                     </button>
                     <button
                       type="submit"
                       className="flex-1 py-3 rounded-2xl bg-[#00c69e] hover:bg-[#008f72] text-white font-heading font-bold text-sm shadow-3d-teal"
                     >
-                      Save Account
+                      {t.modalCustSaveBtn}
                     </button>
                   </div>
                 </form>
@@ -2990,7 +3060,7 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* CREDENTIAL SLIP MODAL */}
+          {/* CREDENTIAL SLIP MODAL (With direct customer WhatsApp link) */}
           {slipModal.open && slipModal.data && (
             <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-white rounded-[36px] max-w-sm w-full p-6 shadow-2xl border-4 border-[#00c69e] text-center">
@@ -3009,6 +3079,12 @@ Please visit the portal to start playing. Happy learning!`
                     <span className="text-[11px] font-extrabold text-slate-500 uppercase">{t.slipNameLabel}</span>
                     <strong className="text-slate-800 text-xs">{slipModal.data.name}</strong>
                   </div>
+                  {slipModal.data.phone && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-[11px] font-extrabold text-slate-500 uppercase">{t.slipPhoneLabel}</span>
+                      <strong className="text-slate-800 font-mono text-xs">{slipModal.data.phone}</strong>
+                    </div>
+                  )}
                   <div className="flex justify-between items-center">
                     <span className="text-[11px] font-extrabold text-slate-500 uppercase">{t.slipLoginLabel}</span>
                     <strong className="text-[#FD60C7] font-mono text-sm">{slipModal.data.loginId}</strong>
@@ -3021,13 +3097,17 @@ Please visit the portal to start playing. Happy learning!`
 
                 <div className="flex flex-col gap-2.5">
                   <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(t.slipMsgCustomer(slipModal.data.loginId, slipModal.data.password))}`}
+                    href={
+                      slipModal.data.phone
+                        ? `https://api.whatsapp.com/send?phone=${cleanPhoneNumberForWa(slipModal.data.phone)}&text=${encodeURIComponent(t.slipMsgCustomer(slipModal.data.loginId, slipModal.data.password))}`
+                        : `https://api.whatsapp.com/send?text=${encodeURIComponent(t.slipMsgCustomer(slipModal.data.loginId, slipModal.data.password))}`
+                    }
                     target="_blank"
                     rel="noopener noreferrer"
                     className="w-full py-3.5 rounded-2xl bg-[#00c69e] hover:bg-[#008f72] text-white font-heading font-bold text-xs uppercase tracking-wider shadow-3d-teal transition flex items-center justify-center gap-2 group cursor-pointer"
                   >
                     <Icon name="whatsapp" className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    <span>{t.slipSendWaBtn}</span>
+                    <span>{slipModal.data.phone ? (lang === 'ms' ? 'Hantar Terus ke WhatsApp Pelanggan' : 'Send to Customer WhatsApp') : t.slipSendWaBtn}</span>
                   </a>
 
                   <button
@@ -3133,7 +3213,7 @@ Please visit the portal to start playing. Happy learning!`
                                   </span>
                                 ) : (
                                   <span className="text-[10px] font-bold text-slate-400 group-hover:text-[#FD60C7] transition">
-                                    Klik untuk pilih ➔
+                                    {lang === 'ms' ? 'Klik untuk pilih ➔' : 'Click to select ➔'}
                                   </span>
                                 )}
                               </div>
@@ -3245,7 +3325,7 @@ Please visit the portal to start playing. Happy learning!`
               <div className="bg-white rounded-[36px] max-w-md w-full p-6 sm:p-8 shadow-2xl border-4 border-[#07bdff]">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-heading font-bold text-xl text-slate-900">
-                    {categoryModal.editing ? "Edit Category World" : "Create New World"}
+                    {categoryModal.editing ? t.modalEditWorldTitle : t.modalCreateWorldTitle}
                   </h3>
                   <button
                     onClick={() => setCategoryModal({ open: false, editing: null })}
@@ -3269,29 +3349,35 @@ Please visit the portal to start playing. Happy learning!`
                   className="space-y-4"
                 >
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">World Name *</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalWorldNameLabel}
+                    </label>
                     <input
                       name="name"
                       required
                       defaultValue={categoryModal.editing?.name || ""}
-                      placeholder="e.g. Science & Space"
+                      placeholder={t.modalWorldNamePh}
                       className="w-full px-4 py-2.5 rounded-2xl border-3 border-[#AEE9F3] font-bold text-sm focus:border-[#07bdff] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">Description</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalWorldDescLabel}
+                    </label>
                     <textarea
                       name="description"
                       rows="2"
                       defaultValue={categoryModal.editing?.description || ""}
-                      placeholder="Brief overview..."
+                      placeholder={t.modalWorldDescPh}
                       className="w-full px-4 py-2.5 rounded-2xl border-3 border-[#AEE9F3] font-bold text-sm focus:border-[#07bdff] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">Square 1:1 Thumbnail URL *</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalWorldThumbLabel}
+                    </label>
                     <input
                       name="thumbnail_url"
                       required
@@ -3301,7 +3387,9 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">Display Order</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalWorldOrderLabel}
+                    </label>
                     <input
                       name="display_order"
                       type="number"
@@ -3316,13 +3404,13 @@ Please visit the portal to start playing. Happy learning!`
                       onClick={() => setCategoryModal({ open: false, editing: null })}
                       className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-heading font-bold text-sm"
                     >
-                      Batal
+                      {t.modalCancelBtn}
                     </button>
                     <button
                       type="submit"
                       className="flex-1 py-3 rounded-2xl bg-[#07bdff] hover:bg-[#028ec4] text-white font-heading font-bold text-sm shadow-3d-sky"
                     >
-                      Save World
+                      {t.modalWorldSaveBtn}
                     </button>
                   </div>
                 </form>
@@ -3336,7 +3424,7 @@ Please visit the portal to start playing. Happy learning!`
               <div className="bg-white rounded-[36px] max-w-lg w-full p-6 sm:p-8 shadow-2xl border-4 border-[#ff68bd] max-h-[90vh] overflow-y-auto">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-heading font-bold text-xl text-slate-900">
-                    {gameModal.editing ? "Edit Game" : "Add New Game"}
+                    {gameModal.editing ? t.modalEditGameTitle : t.modalAddGameTitle}
                   </h3>
                   <button
                     onClick={() => setGameModal({ open: false, editing: null })}
@@ -3364,7 +3452,9 @@ Please visit the portal to start playing. Happy learning!`
                   className="space-y-4"
                 >
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">Game Title *</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalGameTitleLabel}
+                    </label>
                     <input
                       name="title"
                       required
@@ -3375,7 +3465,9 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">Category World *</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalGameCatLabel}
+                    </label>
                     <select
                       name="category_id"
                       required
@@ -3389,7 +3481,9 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">Description</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalGameDescLabel}
+                    </label>
                     <textarea
                       name="description"
                       rows="2"
@@ -3400,7 +3494,9 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">Square 1:1 Thumbnail URL *</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-600 mb-1">
+                      {t.modalGameThumbLabel}
+                    </label>
                     <input
                       name="thumbnail_url"
                       required
@@ -3410,7 +3506,9 @@ Please visit the portal to start playing. Happy learning!`
                   </div>
 
                   <div className="bg-slate-50 p-4 rounded-2xl border-2 border-slate-200 space-y-3">
-                    <label className="block text-xs font-extrabold uppercase text-slate-700">Add Method</label>
+                    <label className="block text-xs font-extrabold uppercase text-slate-700">
+                      {t.modalGameMethodLabel}
+                    </label>
                     <div className="flex flex-wrap gap-4">
                       <label className="flex items-center gap-2 cursor-pointer font-bold text-xs text-slate-700">
                         <input
@@ -3484,7 +3582,7 @@ Please visit the portal to start playing. Happy learning!`
                       className="w-4 h-4 text-[#ff68bd] rounded"
                     />
                     <label htmlFor="is_published" className="text-xs font-extrabold text-slate-700">
-                      Publish Live to Catalogue Immediately
+                      {t.modalGameLiveCheck}
                     </label>
                   </div>
 
@@ -3494,13 +3592,13 @@ Please visit the portal to start playing. Happy learning!`
                       onClick={() => setGameModal({ open: false, editing: null })}
                       className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-700 font-heading font-bold text-sm"
                     >
-                      Batal
+                      {t.modalCancelBtn}
                     </button>
                     <button
                       type="submit"
                       className="flex-1 py-3 rounded-2xl bg-[#ff68bd] hover:bg-[#d94695] text-white font-heading font-bold text-sm shadow-3d-pink"
                     >
-                      Save Game
+                      {t.modalGameSaveBtn}
                     </button>
                   </div>
                 </form>
@@ -3508,7 +3606,7 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* OFFICIAL FOOTER — Safe Area Aware */}
+          {/* OFFICIAL FOOTER */}
           {currentView !== 'player' && (
             <footer className="bg-white border-t-4 border-[#AEE9F3] py-6 ios-safe-bottom text-center mt-auto relative z-20">
               <p className="text-xs font-extrabold text-slate-400 tracking-wider">
