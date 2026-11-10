@@ -27,6 +27,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DynaPuff:wght@400..700&family=Jua&display=swap" rel="stylesheet">
 
+  <!-- Core React 18 & Babel CDN (Wajib ada) -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
   <!-- Official Google Firebase Modular SDKs (v11) via CDN -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -185,7 +190,7 @@
     const CONFIG_ADMIN_LOGIN_ID = "admin";
     const CONFIG_DEFAULT_ADMIN_PASS = "110708";
 
-    // Safe Firebase Web App Identity (Reconstructed dynamically to bypass GitHub secret scan false positives)
+    // Safe Firebase Web App Identity
     const KINDY_FIREBASE_CONFIG = {
       apiKey: ["AIzaSy", "BGJVsSqzkDLzDGnR59TNxnRR5KBqFgfoA"].join(""),
       authDomain: "kindyklub.firebaseapp.com",
@@ -1894,7 +1899,7 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* TOP NAVIGATION — Full Solid Background + Dynamic Island Clearance */}
+          {/* TOP NAVIGATION */}
           {currentView !== 'welcome' && currentView !== 'player' && (
             <header className="sticky top-0 z-40 bg-white border-b-4 border-[#AEE9F3] shadow-md app-header-safe">
               <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 pb-3 pt-1 flex items-center justify-between gap-1.5 sm:gap-2">
@@ -2341,22 +2346,18 @@ Please visit the portal to start playing. Happy learning!`
               </div>
             )}
 
-            {/* PAGE 4: GAME PLAYER PAGE (WITH SMOOTH SCROLL SUPPORT FOR ALL GAMES) */}
+            {/* PAGE 4: GAME PLAYER PAGE */}
             {currentView === 'player' && activeGame && (
               <div className="fixed inset-0 z-50 w-full h-full bg-slate-950 flex flex-col overflow-hidden">
-                {/* Floating Safe-positioned Back Button */}
+                {/* SAFE RETRO BACK ARROW: LEFT SIDE, LOWERED TO AVOID OVERLAPPING GAME MENUS */}
                 <button
                   onClick={() => setCurrentView('category-games')}
-                  className="fixed top-3 left-3 z-[100] px-3.5 py-2 rounded-full bg-slate-900/90 hover:bg-slate-900 text-white border-2 border-white/60 shadow-2xl flex items-center gap-1.5 backdrop-blur-md active:scale-95 transition-all group"
+                  className="fixed top-20 left-3 z-[100] w-11 h-11 rounded-full bg-white/95 hover:bg-white text-slate-800 border-3 border-[#07bdff] shadow-[0_6px_20px_rgba(0,0,0,0.35)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group backdrop-blur-sm"
                   title={t.backToGameList}
                 >
-                  <Icon name="arrow-left" className="w-4 h-4 text-[#E1F011] group-hover:-translate-x-0.5 transition-transform" />
-                  <span className="font-heading font-bold text-xs uppercase tracking-wider text-white">
-                    {lang === 'ms' ? 'Keluar' : 'Exit'}
-                  </span>
+                  <Icon name="arrow-left" className="w-5 h-5 text-[#028ec4] stroke-[3.5] group-hover:-translate-x-0.5 transition-transform" />
                 </button>
 
-                {/* Full-Scroll Interactive Container */}
                 <div className="w-full h-full flex-1 relative bg-white game-scroll-wrapper">
                   {activeGame.source_type === 'BUILTIN_MATH' && (
                     <div className="w-full min-h-full">
@@ -2916,7 +2917,7 @@ Please visit the portal to start playing. Happy learning!`
             )}
           </main>
 
-          {/* CREATE CUSTOMER ACCOUNT MODAL (With Phone Number Input) */}
+          {/* CREATE CUSTOMER ACCOUNT MODAL */}
           {createCustomerModal && (
             <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-white rounded-[36px] max-w-md w-full p-6 sm:p-8 shadow-2xl border-4 border-[#00c69e] max-h-[92vh] overflow-y-auto">
@@ -3054,7 +3055,7 @@ Please visit the portal to start playing. Happy learning!`
             </div>
           )}
 
-          {/* CREDENTIAL SLIP MODAL (With direct customer WhatsApp link) */}
+          {/* CREDENTIAL SLIP MODAL */}
           {slipModal.open && slipModal.data && (
             <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
               <div className="bg-white rounded-[36px] max-w-sm w-full p-6 shadow-2xl border-4 border-[#00c69e] text-center">
